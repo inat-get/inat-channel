@@ -10,7 +10,7 @@ module INatChannel
     options = parse_options
     load_config(options[:config] || './inat-channel.yaml')
     load_env
-    setup_logger(options[:log_level] || :warn)
+    setup_logger(options[:log_level] || @config[:log_level] || :warn)
     validate_config
   end
 
