@@ -2,13 +2,16 @@ require 'json'
 require 'fileutils'
 
 module INatChannel
-  
+
+  DEFAULT_POOL_FILE = 'pool.json'
+  DEFAULT_SENT_FILE = 'sent.json'
+
   def pool_file
-    config[:pool_file] || 'pool.json'
+    config[:pool_file] || DEFAULT_POOL_FILE
   end
 
   def sent_file
-    config[:sent_file] || 'sent.json'
+    config[:sent_file] || DEFAULT_SENT_FILE
   end
 
   def pool
