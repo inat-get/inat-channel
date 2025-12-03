@@ -1,6 +1,6 @@
 # iNat Telegram Poster (DRAFT!)
 
-[![Ruby](https://img.shields.io/badge/Ruby-3.0%2B-red.svg)](https://www.ruby-lang.org/)
+[![Ruby](https://img.shields.io/badge/Ruby-3.4%2B-red.svg)](https://www.ruby-lang.org/)
 [![Telegram Bot](https://img.shields.io/badge/Telegram-Bot-blue.svg)](https://core.telegram.org/bots)
 [![iNaturalist API v2](https://img.shields.io/badge/iNaturalist-APIv2-green.svg)](https://www.inaturalist.org/pages/api+reference)
 
