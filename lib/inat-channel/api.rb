@@ -77,8 +77,13 @@ module INatChannel
   end
 
   def parse_base_query
-    return {} unless config[:base_query]
-    Hash[config[:base_query].split('&').map { |param| param.split('=', 2) }]
+    base_params = config[:base_query] ? Hash[config[:base_query].split('&').map { |param| param.split('=', 2) }] : {}
+  
+    cutoff_date = (Time.now.utc - (config[:days_back] * 24 * 3600)).strftime('%Y-%m-%d')
+    base_params['created_d1'] = cutoff_date
+  
+    logger.debug "API params: #{base_params}"
+    base_params
   end
 
 end
