@@ -4,3 +4,10 @@ require_relative '../lib/inat-channel'
 
 include INatChannel
 
+setup
+
+logger.info "Started at #{Time.now}"
+
+# temporary
+puts "Config loaded: base_query=#{config[:base_query]}"
+puts "Telegram token: #{telegram_token[0..10]}..."
