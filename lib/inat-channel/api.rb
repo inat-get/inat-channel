@@ -7,7 +7,7 @@ module INatChannel
   DELAY = 1.0
 
   LIST_FIELDS = 'uuid'
-  SINGLE_FIELDS = '(id:!t,uuid:!t,geojson:(all:!t),user:(login:!t,name:!t),taxon:(ancestor_ids:!t,preferred_common_name:!t,name:!t),' +
+  SINGLE_FIELDS = '(id:!t,uuid:!t,uri:!t,geojson:(all:!t),user:(login:!t,name:!t),taxon:(ancestor_ids:!t,preferred_common_name:!t,name:!t),' +
                   'place_ids:!t,observed_on_string:!t,description:!t,photos:(url:!t),identifications:(taxon:(ancestors:(name:!t))))'
 
   def load_news

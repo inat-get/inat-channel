@@ -1,3 +1,4 @@
+require 'set'
 
 require_relative 'config'
 
@@ -8,11 +9,12 @@ module INatChannel
       taxon_title(observation[:taxon]),
       observation_block(observation),
       place_block(observation[:place_ids]) || observation[:place_guess],
-      ancestors_block(taxon)
+      ancestors_block(observation)
     ].join('<br><br>')
   end
 
   def list_photos observation
+    return [] unless observation[:photos]
     observation[:photos].map ( |ph| ph[:url].gsub('square', 'original') )
   end
 
@@ -38,11 +40,11 @@ module INatChannel
   def observation_block observation
     user = observation[:user]
     user_title = user[:name] || "<code>#{ user[:login] }</code>"
-    user_link = "https://www.inaturalist.org/people/#{ user[:id] }"
+    user_link = "https://www.inaturalist.org/people/#{ user[:login }"
     observation_part = "#{ ICONS[:observation] } <a href='#{ observation[:uri] }'>\##{ observation[:id] }</a>"
     user_part = "#{ ICONS[:user] } <a href='#{ user_link }'>#{ user_title }</a>"
     date_part = "#{ ICONS[:calendar] } #{ observation[:observed_on_string] }"
-    description = observation[:description]
+    description = observation[:description].gsub(/<[^>]*>/, '')
     description_part = if description && !description.empty?
       "<br>#{ ICONS[:description] } #{ description }"
     else
@@ -52,10 +54,13 @@ module INatChannel
   end
 
   def place_block place_ids
+    return nil unless config[:places]
+
+    place_ids = Set[*place_ids]
     found = []
     config[:places].each do |_, list|
       list.each do |item|
-        item_ids = item[:place_ids]
+        item_ids = Set[*item[:place_ids]]
         if place_ids.intersect?(item_ids)
           found << item
           break
@@ -66,7 +71,7 @@ module INatChannel
     if found.empty?
       nil
     else
-      found.map { |i| "#{ ICONS[:place] } <a href='#{ i[:link] }'>#{ i[:title] }</a>" }.join('<br>')
+      found.map { |i| "#{ ICONS[:place] } <a href='#{ i[:link] }'>#{ i[:text] }</a>" }.join('<br>')
     end
   end
 
