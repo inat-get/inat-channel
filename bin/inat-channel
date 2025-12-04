@@ -1,13 +1,26 @@
 #!/usr/bin/ruby
-
 require_relative '../lib/inat-channel'
-
 include INatChannel
 
 setup
-
 logger.info "Started at #{Time.now}"
 
-# temporary
-puts "Config loaded: base_query=#{config[:base_query]}"
-puts "Telegram token: #{telegram_token[0..10]}..."
+news = load_news  # только свежие за days_back дней (по created_dated)
+logger.info "Found #{news.size} fresh UUIDs"
+
+new_uuids = news - pool - sent.keys  # только совсем новые
+add_to_pool(new_uuids) unless new_uuids.empty?
+
+uuid = pop_random
+if uuid && (obs = load_observation(uuid))
+  message = make_message(obs)
+  photos = list_photos(obs)
+  puts message
+  puts "Photos (#{photos.size}): #{photos.first}"
+  logger.info "Ready to send observation #{obs[:id]}"
+else
+  logger.info "No fresh observations to post"
+end
+
+save
+logger.info "Run complete"

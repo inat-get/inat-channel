@@ -1,5 +1,6 @@
-require 'faraday'
+require 'date'
 require 'json'
+require 'faraday'
 
 module INatChannel
 
@@ -22,6 +23,7 @@ module INatChannel
         req.params['per_page'] = PER_PAGE
         req.params['fields'] = LIST_FIELDS
         req.params.merge!(config[:base_query])   # base query in config is Hash
+        req.params['created_d1'] = (Date.today - config[:days_back]).to_s
       end
 
       unless response.success?

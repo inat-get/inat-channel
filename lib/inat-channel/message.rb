@@ -40,7 +40,7 @@ module INatChannel
   def observation_block observation
     user = observation[:user]
     user_title = user[:name] || "<code>#{ user[:login] }</code>"
-    user_link = "https://www.inaturalist.org/people/#{ user[:login }"
+    user_link = "https://www.inaturalist.org/people/#{ user[:login] }"
     observation_part = "#{ ICONS[:observation] } <a href='#{ observation[:uri] }'>\##{ observation[:id] }</a>"
     user_part = "#{ ICONS[:user] } <a href='#{ user_link }'>#{ user_title }</a>"
     date_part = "#{ ICONS[:calendar] } #{ observation[:observed_on_string] }"
