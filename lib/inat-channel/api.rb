@@ -6,6 +6,10 @@ module INatChannel
   PER_PAGE = 200
   DELAY = 1.0
 
+  LIST_FIELDS = 'uuid'
+  SINGLE_FIELDS = '(id:!t,uuid:!t,geojson:(all:!t),user:(login:!t,name:!t),taxon:(ancestor_ids:!t,preferred_common_name:!t,name:!t),' +
+                  'place_ids:!t,observed_on_string:!t,description:!t,photos:(url:!t),identifications:(taxon:(ancestors:(name:!t))))'
+
   def load_news
   
     uuids = []
@@ -16,8 +20,8 @@ module INatChannel
       response = faraday.get('https://api.inaturalist.org/v2/observations') do |req|
         req.params['page'] = page
         req.params['per_page'] = PER_PAGE
-        req.params['fields'] = 'uuid'         
-        req.params.merge!(parse_base_query)   
+        req.params['fields'] = LIST_FIELDS
+        req.params.merge!(config[:base_query])   # base query in config is Hash
       end
 
       unless response.success?
@@ -48,7 +52,8 @@ module INatChannel
   end
 
   def load_observation(uuid)
-    url = "https://api.inaturalist.org/v2/observations/#{uuid}"
+    # use this endpoint for locale setting
+    url = "https://api.inaturalist.org/v2/observations?uuid=#{uuid}&locale=#{config[:base_query][:locale]}&fields=#{SINGLE_FIELDS}"
     response = faraday.get(url)
 
     if response.success?
@@ -74,16 +79,6 @@ module INatChannel
       f.request :retry, max: (config[:retries] || 3), interval: 1.0, exceptions: [Faraday::TimeoutError]
       f.adapter Faraday.default_adapter
     end
-  end
-
-  def parse_base_query
-    base_params = config[:base_query] ? Hash[config[:base_query].split('&').map { |param| param.split('=', 2) }] : {}
-  
-    cutoff_date = (Time.now.utc - (config[:days_back] * 24 * 3600)).strftime('%Y-%m-%d')
-    base_params['created_d1'] = cutoff_date
-  
-    logger.debug "API params: #{base_params}"
-    base_params
   end
 
 end

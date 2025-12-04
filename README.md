@@ -37,14 +37,19 @@ bundle install
 
 # 2. Configure (config.yaml)
 cat > config.yaml << EOF
-base_query: "project_id=12345&popular=true&quality_grade=research"
+base_query: 
+  project_id: 12345
+  popular: true
+  quality_grade: research
+  locale: ru
 days_back: 30
 chat_id: -1001234567890
 retries: 5
 places:
-  - ids:[21]
-    link: "https://inaturalist.org/projects/12345"
-    text: "Moscow Region Project"
+  group:
+    - ids:[21]
+      link: "https://inaturalist.org/projects/12345"
+      text: "Moscow Region Project"
 EOF
 
 # 3. Set ENV
@@ -66,9 +71,10 @@ days_back: 30                                          # Past N days
 chat_id: -1001234567890                               # Channel/group ID
 retries: 5                                            # API/Telegram retries
 places:                                                # Auto-links
-  - ids:                                    # place_ids from API[21]
-    link: "https://inaturalist.org/projects/12345"
-    text: "Regional Project"
+  group:
+    - ids:                                    # place_ids from API[21]
+      link: "https://inaturalist.org/projects/12345"
+      text: "Regional Project"
 ```
 
 ## 📁 Files
@@ -86,25 +92,7 @@ places:                                                # Auto-links
 
 ```
 # Gemfile
-gem 'httpclient'          # iNat API
 gem 'telegram-bot-ruby'   # Telegram Bot API
-gem 'retryable'           # Retry logic
-gem 'yaml'                # Config
-gem 'logger'              # Logging
-gem 'json'                # Storage
-```
-
-## 🌍 API Examples
-
-```
-# Project
-base_query: "project_id=12345&popular=true"
-
-# Birds in Moscow
-base_query: "taxon_name=Aves&place_id=11&popular=true"
-
-# User's popular observations
-base_query: "user_id=ivanov&popular=true&quality_grade=research"
 ```
 
 ## ❤️ Acknowledgments
