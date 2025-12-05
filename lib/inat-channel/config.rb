@@ -12,6 +12,9 @@ module INatChannel
     load_env
     setup_logger(options[:log_level] || @config[:log_level] || :warn)
     validate_config
+    acquire_lock!
+    trap("INT") { release_lock; exit }
+    trap("TERM") { release_lock; exit }
   end
 
   private
@@ -54,8 +57,17 @@ module INatChannel
 
   def validate_config
     required_keys = [:base_query, :days_back, :chat_id]
+    # optional_keys = [:pool_file, :sent_file, :lock_file, :retries]          # unused
+  
     missing = required_keys.reject { |k| @config.key?(k) }
     raise "Missing config keys: #{missing.join(', ')}" unless missing.empty?
+  
+    unless config[:days_back].is_a?(Integer) && config[:days_back] > 0
+      raise "days_back must be positive integer"
+    end
+    unless config[:base_query].is_a?(Hash)
+      raise "base_query must be a Hash"
+    end
   end
 
 end

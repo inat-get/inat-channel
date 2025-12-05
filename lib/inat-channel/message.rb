@@ -15,7 +15,7 @@ module INatChannel
 
   def list_photos observation
     return [] unless observation[:photos]
-    observation[:photos].map ( |ph| ph[:url].gsub('square', 'original') )
+    observation[:photos].map { |ph| ph[:url].gsub('square', 'original') }
   end
 
   private

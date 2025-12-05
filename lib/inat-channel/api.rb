@@ -32,7 +32,7 @@ module INatChannel
         break
       end
 
-      data = JSON.parse response.body, symbolize_names: true
+      data = response.body
       page_uuids = data[:results].map { |obs| obs[:uuid] }
       uuids.concat page_uuids
 
@@ -55,11 +55,14 @@ module INatChannel
 
   def load_observation(uuid)
     # use this endpoint for locale setting
-    url = "https://api.inaturalist.org/v2/observations?uuid=#{uuid}&locale=#{config[:base_query][:locale]}&fields=#{SINGLE_FIELDS}"
-    response = faraday.get(url)
+    response = faraday.get('https://api.inaturalist.org/v2/observations') do |req|
+      req.params['uuid'] = uuid
+      req.params['locale'] = config[:base_query][:locale]
+      req.params['fields'] = SINGLE_FIELDS
+    end
 
     if response.success?
-      data = JSON.parse response.body, symbolize_names: true
+      data = response.body
       obs = data[:results]&.first
       logger.debug "Loaded observation #{uuid}"
       obs
@@ -78,7 +81,20 @@ module INatChannel
 
   def faraday
     @faraday ||= Faraday.new do |f|
-      f.request :retry, max: (config[:retries] || 3), interval: 1.0, exceptions: [Faraday::TimeoutError]
+      f.request :retry, 
+        max: (config[:retries] || 3), 
+        interval: 1.0,
+        interval_randomness: 0.5,  
+        exceptions: [
+          Faraday::TimeoutError,
+          Faraday::ConnectionFailed,     
+          Faraday::ConnectionNotFound,   
+          Faraday::SSLError              
+        ]
+    
+      f.request :url_encoded           
+      f.response :json, content_type: /\bjson$/, parser: proc { |body| JSON.parse(body, symbolize_names: true) }
+    
       f.adapter Faraday.default_adapter
     end
   end

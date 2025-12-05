@@ -75,4 +75,61 @@ module INatChannel
     File.write(sent_file, JSON.pretty_generate(sent))
   end
 
+  public
+
+  LOCK_TTL = 1800  # 30 min
+
+  def lock_file
+    config[:lock_file] || File.join(File.dirname(pool_file), "bot.lock")
+  end
+
+  def acquire_lock!
+    lock_path = lock_file
+    FileUtils.mkdir_p(File.dirname(lock_path))
+    
+    if File.exist?(lock_path)
+      lock_data = load_lock_data(lock_path)
+      if stale_lock?(lock_data)
+        logger.info "Removing stale lock #{lock_path}"
+        File.delete(lock_path)
+      else
+        raise "Another instance is already running (PID: #{lock_data[:pid]})"
+      end
+    end
+
+    create_lock_file(lock_path)
+    logger.info "Lock acquired: #{lock_path}"
+  end
+
+  def release_lock
+    lock_path = lock_file
+    File.delete(lock_path) if File.exist?(lock_path)
+    logger.info "Lock released: #{lock_path}"
+  rescue
+    logger.warn "Failed to release lock (ignored)"
+  end
+
+  private
+
+  def load_lock_data(path)
+    JSON.parse(File.read(path), symbolize_names: true)
+  rescue
+    {}
+  end
+
+  def stale_lock?(lock_data)
+    return true unless lock_data[:started_at]
+    
+    started_at = Time.parse(lock_data[:started_at])
+    (Time.now - started_at) > LOCK_TTL
+  end
+
+  def create_lock_file(path)
+    lock_data = {
+      pid: Process.pid,
+      started_at: Time.now.utc.iso8601
+    }
+    File.write(path, JSON.pretty_generate(lock_data))
+  end
+
 end
