@@ -39,8 +39,8 @@ end
 # 4. Загружаем и отправляем
 obs = load_observation(uuid)
 if obs
-  send_observation(obs)
-  sent[uuid] = { msg_id: true, sent_at: Time.now.to_s }
+  msg_id = send_observation(obs)
+  sent[uuid.intern] = { msg_id: msg_id, sent_at: Time.now.to_s }
   logger.info "✅ Posted #{obs[:id]} (#{list_photos(obs).size} photos)"
 else
   logger.warn "❌ Failed to load #{uuid} — returning to pool"

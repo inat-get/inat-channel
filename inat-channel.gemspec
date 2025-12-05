@@ -1,6 +1,6 @@
 Gem::Specification::new do |s|
   s.name = 'inat-channel'
-  s.version = '0.8.0'
+  s.version = '0.8.0.2'
   s.summary = 'iNat Telegram Poster'
   s.description = 'iNaturalist Telegram Bot: Posts random popular observations from configurable API queries.'
   s.authors     = ["Ivan Shikhalev"]
