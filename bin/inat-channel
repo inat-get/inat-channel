@@ -10,7 +10,7 @@ news = load_news
 logger.info "Found #{news.size} fresh UUIDs (created_d1=#{config[:days_back]})"
 
 # 2. Убираем уже отправленные
-fresh = news - sent.keys
+fresh = news - sent.keys.map { |k| k.to_s }
 logger.info "Fresh after filter: #{fresh.size} (excluding #{sent.size} sent)"
 
 if fresh.any?
@@ -28,8 +28,10 @@ else
   if uuid
     logger.info "📦 Selected from POOL #{uuid[0..7]}... (pool was #{pool.size + 1})"
   else
+    notify_admin "ℹ️  No fresh AND pool empty — nothing to post today"
     logger.info "ℹ️  No fresh AND pool empty — nothing to post today"
     save
+    release_lock
     exit
   end
 end

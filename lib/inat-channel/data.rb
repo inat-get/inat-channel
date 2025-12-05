@@ -68,6 +68,7 @@ module INatChannel
 
   def save_pool
     FileUtils.mkdir_p(File.dirname(pool_file))
+    pool.reject! { |k| sent.has_key?(k.intern) }
     File.write(pool_file, JSON.pretty_generate(pool))
   end
 

@@ -19,10 +19,8 @@ module INatChannel
 
   private
 
-private
-
   def send_message(chat_id, text)
-    response = faraday.post("#{TELEGRAM_API}#{telegram_token}/sendMessage") do |req|
+    response = telegram_faraday.post("#{TELEGRAM_API}#{telegram_token}/sendMessage") do |req|
       req.params['chat_id'] = chat_id
       req.params['text'] = text
       req.params['parse_mode'] = 'HTML'
@@ -45,9 +43,10 @@ private
       end
     end.to_json
 
-    response = faraday.post("#{TELEGRAM_API}#{telegram_token}/sendMediaGroup") do |req|
+    response = telegram_faraday.post("#{TELEGRAM_API}#{telegram_token}/sendMediaGroup") do |req|
       req.params['chat_id'] = chat_id
-      req.params['media'] = media
+      req.headers['Content-Type'] = 'application/json'
+      req.body = { media: media }.to_json  # media в теле!
     end
   
     data = JSON.parse response.body, symbolize_names: true

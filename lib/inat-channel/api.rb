@@ -94,7 +94,27 @@ module INatChannel
         ]
     
       f.request :url_encoded           
-      # f.response :json, content_type: /\bjson$/, parser: proc { |body| JSON.parse(body, symbolize_names: true) }
+
+      f.adapter Faraday.default_adapter
+    end
+  end
+
+  def telegram_faraday
+    @faraday ||= Faraday.new do |f|
+      f.request :retry, 
+        max: (config[:retries] || 3), 
+        interval: 2.0,
+        interval_randomness: 0.5,  
+        exceptions: [
+         Faraday::TimeoutError,
+          Faraday::ConnectionFailed,
+          Faraday::SSLError,
+          Faraday::ClientError  # 4xx/5xx
+        ]
+    
+      if logger.level == Logger::DEBUG
+        f.response :logger, logger, bodies: true, headers: true 
+      end
     
       f.adapter Faraday.default_adapter
     end
