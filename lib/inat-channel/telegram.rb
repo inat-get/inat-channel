@@ -13,8 +13,9 @@ module INatChannel
       main_msg_id = send_message(config[:chat_id], message)
     end
     
-    sent[observation[:uuid]] = { msg_id: main_msg_id, sent_at: Time.now.to_s }
+    sent[observation[:uuid].intern] = { msg_id: main_msg_id, sent_at: Time.now.to_s }
     logger.info "✅ Posted #{observation[:id]} (#{photos.size} photos)"
+    main_msg_id
   end
 
   private
