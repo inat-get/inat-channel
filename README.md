@@ -1,5 +1,8 @@
 # iNat Telegram Poster
 
+[![GitHub License](https://img.shields.io/github/license/inat-get/inat-channel)](LICENSE)
+[![Gem Version](https://badge.fury.io/rb/inat-channel.svg?icon=si%3Arubygems)](https://badge.fury.io/rb/inat-channel)
+
 **Автоматический бот**, который ежедневно публикует в Telegram-каналы случайные, популярные наблюдения из iNaturalist, согласно гибким настройкам API-запросов.
 
 ## Версия
