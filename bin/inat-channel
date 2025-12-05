@@ -46,4 +46,6 @@ else
 end
 
 save
+
+release_lock
 logger.info "=== Complete. Pool: #{pool.size} | Sent: #{sent.size} ==="

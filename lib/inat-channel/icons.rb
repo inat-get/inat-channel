@@ -11,6 +11,7 @@ module INatChannel
     :user => '👤',
     :place => '🗺️',
     :calendar => '📅',
+    :location => '📍',
     :observation => '📷',
     :description => '📝',
     :default_taxon => '🧬'

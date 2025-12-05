@@ -12,8 +12,8 @@ Gem::Specification::new do |s|
 
   s.required_ruby_version = "~> 3.4"
 
-  s.add_dependency 'telegram-bot-ruby', '~> 2.4'
   s.add_dependency 'faraday', '~> 2.14'
+  s.add_dependency 'faraday-retry', '~> 2.3'
 
   s.add_development_dependency "rspec", "~> 3.13"
   s.add_development_dependency "rake", "~> 13.3"

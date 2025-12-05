@@ -8,14 +8,14 @@ module INatChannel
     [
       taxon_title(observation[:taxon]),
       observation_block(observation),
-      place_block(observation[:place_ids]) || observation[:place_guess],
+      location_part = "#{ ICONS[:location] } #{ geo_link(observation) }\n" + (place_block(observation[:place_ids]) || observation[:place_guess]),
       ancestors_block(observation)
-    ].join('<br><br>')
+    ].join("\n\n")
   end
 
   def list_photos observation
     return [] unless observation[:photos]
-    observation[:photos].map { |ph| ph[:url].gsub('square', 'original') }
+    observation[:photos].map { |ph| ph[:url].gsub('square', 'large') }
   end
 
   private
@@ -41,16 +41,16 @@ module INatChannel
     user = observation[:user]
     user_title = user[:name] || "<code>#{ user[:login] }</code>"
     user_link = "https://www.inaturalist.org/people/#{ user[:login] }"
-    observation_part = "#{ ICONS[:observation] } <a href='#{ observation[:uri] }'>\##{ observation[:id] }</a>"
+    observation_part = "#{ ICONS[:observation] } <a href='#{ observation[:uri] }'><b>\##{ observation[:id] }</b></a>"
     user_part = "#{ ICONS[:user] } <a href='#{ user_link }'>#{ user_title }</a>"
     date_part = "#{ ICONS[:calendar] } #{ observation[:observed_on_string] }"
-    description = observation[:description].gsub(/<[^>]*>/, '')
+    description = observation[:description]&.gsub(/<[^>]*>/, '')
     description_part = if description && !description.empty?
-      "<br>#{ ICONS[:description] } #{ description }"
+      "\n#{ ICONS[:description] } #{ description }"
     else
       ''
     end
-    "#{ observation_part } — #{ user_part } @ #{ date_part } #{ description_part }"
+    "#{ observation_part }\n#{ date_part }\n#{ user_part }#{ description_part }"
   end
 
   def place_block place_ids
@@ -71,7 +71,7 @@ module INatChannel
     if found.empty?
       nil
     else
-      found.map { |i| "#{ ICONS[:place] } <a href='#{ i[:link] }'>#{ i[:text] }</a>" }.join('<br>')
+      found.map { |i| "#{ ICONS[:place] } <a href='#{ i[:link] }'>#{ i[:text] }</a>" }.join("\n")
     end
   end
 
@@ -87,7 +87,7 @@ module INatChannel
     end
 
     if ancestors
-      ancestors.map { |a| name_to_hashtag(a[:name]) }.join(' • ')
+      (ancestors.map { |a| name_to_hashtag(a[:name]) } + [ name_to_hashtag(observation[:taxon][:name]) ]).join(' • ')
     else
       # TODO: load ancestors with new query...
       nil
@@ -96,6 +96,14 @@ module INatChannel
 
   def name_to_hashtag name
     "\##{ name.gsub('.', '').gsub('-', '').gsub(' ', '_') }"
+  end
+
+  def geo_link(observation)
+    return nil unless observation[:geojson]&.[](:coordinates) && observation[:geojson][:type] == 'Point'
+  
+    lon, lat = observation[:geojson][:coordinates]
+    url = "https://maps.google.com/?q=#{lat},#{lon}"
+    "<a href='#{url}'>#{lat.round(4)}°N, #{lon.round(4)}°E</a>"
   end
 
 end

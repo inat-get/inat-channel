@@ -1,6 +1,7 @@
 require 'date'
 require 'json'
 require 'faraday'
+require 'faraday/retry'
 
 module INatChannel
 
@@ -9,7 +10,7 @@ module INatChannel
 
   LIST_FIELDS = 'uuid'
   SINGLE_FIELDS = '(id:!t,uuid:!t,uri:!t,geojson:(all:!t),user:(login:!t,name:!t),taxon:(ancestor_ids:!t,preferred_common_name:!t,name:!t),' +
-                  'place_ids:!t,observed_on_string:!t,description:!t,photos:(url:!t),identifications:(taxon:(ancestors:(name:!t))))'
+                  'place_ids:!t,place_guess:!t,observed_on_string:!t,description:!t,photos:(url:!t),identifications:(taxon:(ancestors:(name:!t))))'
 
   def load_news
   
@@ -32,7 +33,7 @@ module INatChannel
         break
       end
 
-      data = response.body
+      data = JSON.parse response.body, symbolize_names: true
       page_uuids = data[:results].map { |obs| obs[:uuid] }
       uuids.concat page_uuids
 
@@ -62,7 +63,7 @@ module INatChannel
     end
 
     if response.success?
-      data = response.body
+      data = JSON.parse response.body, symbolize_names: true
       obs = data[:results]&.first
       logger.debug "Loaded observation #{uuid}"
       obs
@@ -83,17 +84,17 @@ module INatChannel
     @faraday ||= Faraday.new do |f|
       f.request :retry, 
         max: (config[:retries] || 3), 
-        interval: 1.0,
+        interval: 2.0,
         interval_randomness: 0.5,  
         exceptions: [
-          Faraday::TimeoutError,
-          Faraday::ConnectionFailed,     
-          Faraday::ConnectionNotFound,   
-          Faraday::SSLError              
+         Faraday::TimeoutError,
+          Faraday::ConnectionFailed,
+          Faraday::SSLError,
+          Faraday::ClientError  # 4xx/5xx
         ]
     
       f.request :url_encoded           
-      f.response :json, content_type: /\bjson$/, parser: proc { |body| JSON.parse(body, symbolize_names: true) }
+      # f.response :json, content_type: /\bjson$/, parser: proc { |body| JSON.parse(body, symbolize_names: true) }
     
       f.adapter Faraday.default_adapter
     end
