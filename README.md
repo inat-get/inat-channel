@@ -1,30 +1,30 @@
-# iNat Telegram Poster (DRAFT!)
+# iNat Telegram Poster
 
-[![Ruby](https://img.shields.io/badge/Ruby-3.4%2B-red.svg)](https://www.ruby-lang.org/)
-[![Telegram Bot](https://img.shields.io/badge/Telegram-Bot-blue.svg)](https://core.telegram.org/bots)
-[![iNaturalist API v2](https://img.shields.io/badge/iNaturalist-APIv2-green.svg)](https://www.inaturalist.org/pages/api+reference)
+**Автоматический бот**, который ежедневно публикует в Telegram-каналы случайные, популярные наблюдения из iNaturalist, согласно гибким настройкам API-запросов.
 
-**Automated daily poster** that shares random **popular iNaturalist observations** to Telegram channels.
+## Версия
 
-## ✨ Features
++ **0.8.0** — *предварительный* релиз.
 
-- **Flexible queries**: `base_query` for projects, taxa, places, users, etc.
-- **Smart posting**: Fresh → pool → sent archive (no duplicates!)
-- **Rich media**: Up to 10 photos + geolocation pins
-- **Taxon hierarchy**: Emojis + ancestor hashtags
-- **Regional links**: Auto-detect places/projects
-- **Safe concurrency**: Lock-file protection
-- **Reliable**: Retries, admin alerts, logging
+## Основные возможности
 
-## 🚀 Quick Start
+- Поддержка гибких запросов iNaturalist API: проекты, таксоны, места, пользователи и др.
+- Очередь публикаций с приоритетом свежих наблюдений, затем пулом и архивом отправленных (без дубликатов).
+- Поддержка до 10 фотографий и геолокационных ссылок в одном посте.
+- Вывод эмодзи и хештегов, соответствующих иерархии таксонов.
+- Автоматическая генерация ссылок на проекты и места из настройки.
+- Механизм блокировки для безопасного параллельного запуска.
+- Автоматические повторы запросов, уведомления администратору, логирование.
 
-```
-# 1. Install
+## Быстрый старт
+
+```bash
+# 1. Установка
 bundle install
 
-# 2. Configure (config.yaml)
+# 2. Создайте конфиг (например, config.yaml)
 cat > config.yaml << EOF
-base_query: 
+base_query:
   project_id: 12345
   popular: true
   quality_grade: research
@@ -34,117 +34,112 @@ chat_id: -1001234567890
 retries: 5
 EOF
 
-# 3. Set ENV
-export TELEGRAM_BOT_TOKEN="your_bot_token"
-export ADMIN_TELEGRAM_ID="your_admin_id"
+# 3. Установите переменные окружения
+export TELEGRAM_BOT_TOKEN="ваш_токен_бота"
+export ADMIN_TELEGRAM_ID="ID_администратора_в_Telegram"
 
-# 4. Run
+# 4. Запуск
 bin/inat-channel -c config.yaml
 
-# 5. Cron (daily 9AM)
-echo "0 9 * * * cd /path/to/bot && bin/inat-channel -c config.yaml >> log/cron.log 2>&1" | crontab -
+# 5. Настройте cron для ежедневного запуска
+echo "0 9 * * * cd /путь/к/проекту && bin/inat-channel -c config.yaml >> log/cron.log 2>&1" | crontab -
 ```
 
-## 🔧 Configuration
+## Конфигурация (пример)
 
-```
-base_query:          # iNat API params (Hash)
+```yaml
+base_query:          # Параметры запроса к iNaturalist API (Hash)
   project_id: 12345
   popular: true
   quality_grade: research
   locale: ru
-days_back: 30        # Past N days (Integer, >0)
-chat_id: -1001234567890  # Telegram channel/group
-retries: 5           # API/Telegram retries
+days_back: 30        # Кол-во дней назад для фильтрации (integer > 0)
+chat_id: -1001234567890  # ID Telegram канала или группы
+retries: 5           # Кол-во повторных попыток запросов (API и Telegram)
 
-# Optional data paths (отдельные папки для разных конфигов!)
+# Опционально — пути хранения данных (лучше использовать разные для параллельных запусков)
 pool_file: "data/pool.json"
-sent_file: "data/sent.json"  
-lock_file: "data/bot.lock"   # Авто: dirname(pool_file)/bot.lock
+sent_file: "data/sent.json"
+lock_file: "data/bot.lock"
 
-places:               # Auto-links by place_ids
+# Автоссылки по place_ids
+places:
   group:
-    - place_ids:[1][2]
+    - place_ids: [1, 2]
       link: "https://inaturalist.org/projects/12345"
       text: "Moscow Region Project"
 ```
 
-## 🔒 Multiple Configurations (параллельный запуск)
+## Запуск нескольких экземпляров
 
-**Разные конфиги → работают параллельно!**
+Можно использовать несколько конфигураций для различных проектов или регионов одновременно, указав для каждого отдельные `pool_file`, `sent_file` и `lock_file`.
 
-```
+```bash
 config/
-├── moscow.yaml      # data/moscow_pool.json + moscow.lock
-└── spb.yaml         # data/spb_pool.json + spb.lock
+├── moscow.yaml       # данные: data/moscow_pool.json + moscow.lock
+└── spb.yaml          # данные: data/spb_pool.json + spb.lock
 
-# Запуск 1
-bin/inat-channel -c config/moscow.yaml
-
-# Запуск 2 (ПАРАЛЛЕЛЬНО!)
-bin/inat-channel -c config/spb.yaml
+bin/inat-channel -c config/moscow.yaml &
+bin/inat-channel -c config/spb.yaml &
 ```
 
-**⚠️ ВАЖНО**: `pool_file`/`sent_file` должны быть **разными** между конфигами!
+Важно: файлы пула и отправленных должны быть уникальными для каждой конфигурации, чтобы избежать гонок и сбоев.
+
+## Структура директорий и данных
 
 ```
-❌ Плохо (race condition!):
-moscow.yaml: pool_file: "data/pool.json"
-spb.yaml:    pool_file: "data/pool.json"
-
-✅ Хорошо:
-moscow.yaml: pool_file: "data/moscow_pool.json"
-spb.yaml:    pool_file: "data/spb_pool.json"
-```
-
-## 📁 File Structure
-
-```
-├── config.yaml          # Settings
+├── config.yaml        # Конфигурация (пример)
 ├── data/
-│   ├── pool.json        # Backup UUIDs
-│   ├── sent.json        # Sent UUIDs + msg_id
-│   └── bot.lock         # Active process lock
-├── log/                 # Daily logs (auto)
-└── bin/inat-channel     # Main executable
+│   ├── pool.json      # Кэш новых UUID объектов для публикации
+│   ├── sent.json      # UUID уже опубликованных объектов + id сообщений Telegram
+│   └── bot.lock       # Лок-файл блокировки работы бота
+├── log/               # Логи запуска бота
+└── bin/inat-channel   # Основной исполняемый файл бота
 ```
 
-## 🛡️ Concurrency Protection
+## Защита от параллельных запусков
 
-- **Lock-файл** с TTL 30мин (автоочистка stale locks)
-- **Graceful shutdown** (SIGINT/SIGTERM)
-- **PID + timestamp** в lock-файле
-- **Ошибка при дублирующемся запуске** на одном конфиге
+- Lock-файл с TTL 30 минут.
+- Автоудаление устаревших блокировок.
+- Завершение по сигналам INT и TERM (graceful shutdown).
+- Ошибка, если бот уже запущен с тем же конфигом.
 
-```
+Пример:
+
+```bash
 $ bin/inat-channel -c config.yaml    # PID 12345 захватил lock
-$ bin/inat-channel -c config.yaml    # Error: Another instance is already running (PID: 12345)
+$ bin/inat-channel -c config.yaml    # Ошибка: процесс с PID 12345 уже запущен
 ```
 
-## 📊 Example Post
+## Пример поста в Telegram
 
 ```
 🪶 <b>Обыкновенный снегирь</b> <i>(Pyrrhula pyrrhula)</i>
+
 📷 #123456 — 👤 <a href="...">Ivan Ivanov</a> @ 📅 2025-11-15
+
 🗺️ <a href="...">Moscow Region Project</a>
 
-↳ 🗺️ 55.7558°N, 37.6173°E [Location pin]
-#Animalia -  #Aves -  #Pyrrhula_pyrrhula
+↳ 🗺️ 55.7558°N, 37.6173°E
+
+#Animalia • #Aves • #Pyrrhula_pyrrhula
 ```
 
-## 🛠️ CLI Options
+## Опции командной строки
 
-```
+```bash
 bin/inat-channel --help
-# -c, --config FILE     Config file (default: inat-channel.yaml)
-# -l, --log-level LEVEL Log level (debug/info/warn/error)
-# --debug               Set log level to debug
+
+# Доступные параметры:
+# -c, --config FILE     Путь к конфигу (по умолчанию inat-channel.yaml)
+# -l, --log-level LEVEL Уровень логирования (debug/info/warn/error)
+# --debug               Установить уровень логирования в debug
 ```
 
-## ❤️ Acknowledgments
+## Благодарности
 
 - [iNaturalist API v2](https://www.inaturalist.org/pages/api+reference)
-- [Telegram Bot Ruby](https://github.com/telegram-bot-rb/telegram-bot)
-- [Faraday HTTP](https://github.com/lostisland/faraday)
+- [Faraday HTTP Client](https://github.com/lostisland/faraday)
 
-**License**: [GPLv3](LICENSE)
+**Лицензия**: [GPLv3](LICENSE)
+
