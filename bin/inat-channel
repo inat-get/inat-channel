@@ -3,51 +3,28 @@ require_relative '../lib/inat-channel'
 include INatChannel
 
 setup
-logger.info "=== iNatChannel Daily Run ==="
+logger.info "=== iNatChannel Run ==="
 
 # 1. Загружаем свежие UUIDs
 news = load_news
-logger.info "Found #{news.size} fresh UUIDs (created_d1=#{CONFIG[:days_back]})"
+logger.info "Found #{news.size} fresh UUIDs (days_back=#{CONFIG[:days_back]})"
 
-# 2. Убираем уже отправленные
-fresh = news - sent.keys.map { |k| k.to_s }
-logger.info "Fresh after filter: #{fresh.size} (excluding #{sent.size} sent)"
+uuid = INatChannel::Data::select_uuid news
 
-if fresh.any?
-  # ✅ ПРИОРИТЕТ СВЕЖИМ: случайный ИЗ СВЕЖИХ
-  uuid = fresh.sample
-  logger.info "🎯 Selected FRESH #{uuid[0..7]}..."
-  
-  # Остальные свежие → в пул
-  remaining_fresh = fresh - [uuid]
-  add_to_pool(remaining_fresh) unless remaining_fresh.empty?
-  
-else
-  # 3. Резерв: из пула
-  uuid = pop_random
-  if uuid
-    logger.info "📦 Selected from POOL #{uuid[0..7]}... (pool was #{pool.size + 1})"
+if uuid
+  obs = load_observation(uuid)
+  if obs
+    msg_id = send_observation(obs)
+    INatChannel::Data::sent[uuid] = { msg_id: msg_id, sent_at: Time.now.to_s }
+    logger.info "✅ Posted #{obs[:id]} (#{list_photos(obs).size} photos)"
   else
-    notify_admin "ℹ️  No fresh AND pool empty — nothing to post today"
-    logger.info "ℹ️  No fresh AND pool empty — nothing to post today"
-    save
-    release_lock
-    exit
+    logger.warn "❌ Failed to load #{uuid} — returning to pool"
+    INatChannel::Data::pool << uuid 
+    notify_admin "❌ Failed to load #{uuid} — returning to pool"
   end
-end
 
-# 4. Загружаем и отправляем
-obs = load_observation(uuid)
-if obs
-  msg_id = send_observation(obs)
-  sent[uuid.intern] = { msg_id: msg_id, sent_at: Time.now.to_s }
-  logger.info "✅ Posted #{obs[:id]} (#{list_photos(obs).size} photos)"
+  INatChannel::Data::save
 else
-  logger.warn "❌ Failed to load #{uuid} — returning to pool"
-  pool << uuid if fresh.empty?  # только если брали из пула
+  notify_admin 'ℹ️ No observation to send.'
 end
 
-save
-
-release_lock
-logger.info "=== Complete. Pool: #{pool.size} | Sent: #{sent.size} ==="

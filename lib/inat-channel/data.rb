@@ -1,6 +1,7 @@
 require 'time'
 require 'json'
 require 'fileutils'
+require 'set'
 
 require_relative 'config'
 require_relative 'logger'
@@ -8,79 +9,86 @@ require_relative 'lock'
 
 module INatChannel
 
-  DEFAULT_POOL_FILE = 'pool.json'
-  DEFAULT_SENT_FILE = 'sent.json'
+  module Data 
 
-  # TODO: remove
-  def pool_file
-    CONFIG[:pool_file] || DEFAULT_POOL_FILE
-  end
+    class << self
 
-  # TODO: remove
-  def sent_file
-    CONFIG[:sent_file] || DEFAULT_SENT_FILE
-  end
+      def select_uuid fresh
+        INatChannel::LOGGER.info "Received #{fresh.size} uuids"
 
-  def pool
-    @pool ||= load_pool
-  end
+        fresh.reject! { |uuid| sent?(uuid) }
+        unless fresh.empty?
+          result = fresh.sample
+          fresh.delete result
+          pool.merge fresh
+          INatChannel::LOGGER.info "Fresh uuid selected, #{fresh.size} uuids added to pool"
+          return result
+        end
 
-  def sent
-    @sent ||= load_sent
-  end
+        pool.reject! { |uuid| sent?(uuid) }
+        unless pool.empty?
+          result = pool.sample
+          pool.delete result
+          INatChannel::LOGGER.info "Pool uuid selected, #{pool.size} uuids remain in pool"
+          return result
+        end
 
-  def save
-    save_pool
-    save_sent
-    logger.info "Saved pool=#{pool.size}, sent=#{sent.size}"
-  end
+        nil
+      end
 
-  def add_to_pool(new_uuids)
-    new_pool = (pool + new_uuids).uniq - sent.keys
-    @pool = new_pool
-    logger.info "Added #{new_uuids.size} new UUIDs to pool (total: #{pool.size})"
-  end
+      def save
+        save_pool
+        save_sent
+        INatChannel::LOGGER.info "Saved pool=#{pool.size}, sent=#{sent.size}"
+      end
 
-  def pop_random
-    return nil if pool.empty?
+      private
 
-    uuid = pool.sample
-    pool.delete(uuid)
+      def pool
+        @pool ||= load_pool
+      end
 
-    sent[uuid] = nil
-    logger.debug "Popped random UUID: #{uuid}"
-    uuid
-  end
+      def sent
+        @sent ||= load_sent
+      end
 
-  private
+      def sent? uuid
+        sent.has_key? uuid
+      end
 
-  def load_pool
-    return [] unless File.exist?(pool_file)
+      def load_pool
+        file = INatChannel::CONFIG[:pool_file]
+        data = JSON.parse File.read(file), symbolize_names: false
+        raise "Invalid format of pool file" unless Array === data
+        Set[*data]
+      rescue
+        Set::new
+      end
 
-    JSON.parse(File.read(pool_file), symbolize_names: true)
-  rescue => e
-    logger.warn "Failed to load pool from #{pool_file}: #{e.message}. Starting empty."
-    []
-  end
+      def load_sent
+        file = INatChannel::CONFIG[:sent_file]
+        data = JSON.parse File.read(file), symbolize_names: false
+        raise "Invalid format of sent file" unless Hash === data
+        data
+      rescue
+        {}
+      end
 
-  def load_sent
-    return {} unless File.exist?(sent_file)
+      def save_pool
+        pool.reject! { |uuid| sent?(uuid) }
+        file = INatChannel::CONFIG[:pool_file]
+        FileUtils.mkdir_p File.dirname(file)
+        File.write JSON.pretty_generate(pool.to_a)
+      end
 
-    JSON.parse(File.read(sent_file), symbolize_names: true)
-  rescue => e
-    logger.warn "Failed to load sent from #{sent_file}: #{e.message}. Starting empty."
-    {}
-  end
+      def save_sent
+        file = INatChannel::CONFIG[:sent_file]
+        FileUtils.mkdir_p File.dirname(file)
+        File.write JSON.pretty_generate(sent)
+      end
 
-  def save_pool
-    FileUtils.mkdir_p(File.dirname(pool_file))
-    pool.reject! { |k| sent.has_key?(k.intern) }
-    File.write(pool_file, JSON.pretty_generate(pool))
-  end
+    end
 
-  def save_sent
-    FileUtils.mkdir_p(File.dirname(sent_file))
-    File.write(sent_file, JSON.pretty_generate(sent))
   end
 
 end
