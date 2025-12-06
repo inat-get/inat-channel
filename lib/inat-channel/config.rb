@@ -4,70 +4,106 @@ require 'logger'
 
 module INatChannel
 
-  attr_reader :config, :telegram_token, :notify_telegram_id, :logger
+  module Config
 
-  def setup
-    options = parse_options
-    load_config(options[:config] || './inat-channel.yaml')
-    load_env
-    setup_logger(options[:log_level] || @config[:log_level] || :warn)
-    validate_config
-    acquire_lock!
-    trap("INT") { release_lock; exit }
-    trap("TERM") { release_lock; exit }
-  end
+    class << self
 
-  private
-
-  def parse_options
-    options = {}
-    OptionParser.new do |opts|
-      opts.banner = "Usage: inat-channel [options]"
-      opts.on '-c', '--config FILE', 'Config file (default: inat-channel.yaml)' do |v| 
-        options[:config] = v 
+      def config
+        @config ||= get_config.freeze
       end
-      opts.on '-l', '--log-level LEVEL', [:debug, :info, :warn, :error], 'Log level (default: warn)' do |v| 
-        options[:log_level] = v 
+
+      # TODO: вынести в отдельный модуль все, что связано
+      def logger
+        @logger ||= get_logger
       end
-      opts.on '--debug', 'Set log level to debug' do 
-        options[:log_level] = :debug 
+
+      private
+
+      def get_config
+        options = parse_options
+        options[:config] ||= './inat-channel.yml'
+        cfg = load_config options[:config]
+        cfg.merge! options
+        cfg[:log_level] ||= :warn
+        env = load_env
+        cfg.merge! env
+        validate_and_fix_config! cfg
+        # TODO: вынести работу с lock-файлом отсюда в инициализацию модуля данных
+        acquire_lock!
+        trap 'INT' do 
+          release_lock
+          exit 
+        end
+        trap 'TERM' do 
+          release_lock 
+          exit 
+        end
+
+        cfg
       end
-      opts.on '-h', '--help', 'Show help' do 
-        puts opts 
-        exit 
+
+      def parse_options
+        options = {}
+        OptionParser.new do |opts|
+          opts.banner = 'Usage: inat-channel [options]'
+          opts.on '-c', '--config FILE', 'Config file (default: inat-channel.yml)' do |v|
+            raise ArgumentError, "Config file not found: #{v}" unless File.exist?(v)
+            options[:config] = v
+          end
+          opts.on '-l', '--log-level LEVEL', [:debug, :info, :warn, :error], 'Log level (default: warn)' do |v|
+            options[:log_level] = v
+          end
+          opts.on '--debug', 'Set log level to debug' do
+            options[:log_level] = :debug
+          end
+          opts.on '--version', 'Show version info and exit' do
+            # TODO: implement
+            #   нужно вынести версию в отдельный модули, используемый как здесь, так и в .gemspec
+            exit
+          end
+          opts.on '-h', '--help', 'Show help and exit' do
+            puts opts
+            exit
+          end
+        end.parse!
+        options
       end
-    end.parse!
-    options
-  end
 
-  def load_config path
-    raise "Config file not found: #{path}" unless File.exist?(path)
-    @config = YAML.safe_load_file(path, symbolize_names: true).freeze
-  end
+      def load_config path
+        raise "Config file not found: #{path}" unless File.exist?(path)
+        YAML.safe_load_file(path, symbolize_names: true)
+      end
 
-  def load_env
-    @telegram_token = ENV['TELEGRAM_BOT_TOKEN'].freeze or raise "TELEGRAM_BOT_TOKEN required"
-    @notify_telegram_id = ENV['ADMIN_TELEGRAM_ID'].freeze or raise "ADMIN_TELEGRAM_ID required"
-  end
+      def load_env
+        { 
+          telegram_bot_token: (ENV['TELEGRAM_BOT_TOKEN'] or raise 'TELEGRAM_BOT_TOKEN required'),
+          admin_telegram_id:  (ENV['ADMIN_TELEGRAM_ID']  or raise 'ADMIN_TELEGRAM_ID required')
+        }
+      end
 
-  def setup_logger level
-    @logger = Logger.new(STDOUT)
-    @logger.level = Logger.const_get(level.to_s.upcase)
-  end
+      def get_logger
+        lgr = Logger::new $stderr
+        lgr.level = config[:log_level]
+        lgr
+      end
 
-  def validate_config
-    required_keys = [:base_query, :days_back, :chat_id]
-    # optional_keys = [:pool_file, :sent_file, :lock_file, :retries]          # unused
-  
-    missing = required_keys.reject { |k| @config.key?(k) }
-    raise "Missing config keys: #{missing.join(', ')}" unless missing.empty?
-  
-    unless config[:days_back].is_a?(Integer) && config[:days_back] > 0
-      raise "days_back must be positive integer"
+      def validate_and_fix_config! cfg
+        raise 'Missing or invalid base_query' unless Hash === cfg[:base_query]
+        raise 'Missing or invalid days_back'  unless Integer === cfg[:days_back] && cfg[:days_back] > 0
+        raise 'Missing chat_id'               unless cfg[:chat_id]
+
+        basename = File.basename cfg[:config], '.*'
+        cfg[:pool_file] ||= "./data/#{basename}_pool.json"
+        cfg[:sent_file] ||= "./data/#{basename}_sent.json"
+        cfg[:lock_file] ||= "./data/#{basename}__bot.lock"
+        cfg[:retries]   ||= 5
+      end
+
     end
-    unless config[:base_query].is_a?(Hash)
-      raise "base_query must be a Hash"
-    end
+
   end
+
+  CONFIG = Config::config
+  LOGGER = Config::logger
 
 end

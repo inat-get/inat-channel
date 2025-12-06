@@ -7,7 +7,7 @@ logger.info "=== iNatChannel Daily Run ==="
 
 # 1. Загружаем свежие UUIDs
 news = load_news
-logger.info "Found #{news.size} fresh UUIDs (created_d1=#{config[:days_back]})"
+logger.info "Found #{news.size} fresh UUIDs (created_d1=#{CONFIG[:days_back]})"
 
 # 2. Убираем уже отправленные
 fresh = news - sent.keys.map { |k| k.to_s }

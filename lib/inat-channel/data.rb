@@ -7,12 +7,14 @@ module INatChannel
   DEFAULT_POOL_FILE = 'pool.json'
   DEFAULT_SENT_FILE = 'sent.json'
 
+  # TODO: remove
   def pool_file
-    config[:pool_file] || DEFAULT_POOL_FILE
+    CONFIG[:pool_file] || DEFAULT_POOL_FILE
   end
 
+  # TODO: remove
   def sent_file
-    config[:sent_file] || DEFAULT_SENT_FILE
+    CONFIG[:sent_file] || DEFAULT_SENT_FILE
   end
 
   def pool
@@ -82,7 +84,7 @@ module INatChannel
   LOCK_TTL = 1800  # 30 min
 
   def lock_file
-    config[:lock_file] || File.join(File.dirname(pool_file), "bot.lock")
+    CONFIG[:lock_file] || File.join(File.dirname(pool_file), "bot.lock")
   end
 
   def acquire_lock!

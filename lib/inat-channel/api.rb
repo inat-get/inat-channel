@@ -23,8 +23,8 @@ module INatChannel
         req.params['page'] = page
         req.params['per_page'] = PER_PAGE
         req.params['fields'] = LIST_FIELDS
-        req.params.merge!(config[:base_query])   # base query in config is Hash
-        req.params['created_d1'] = (Date.today - config[:days_back]).to_s
+        req.params.merge!(CONFIG[:base_query])   # base query in config is Hash
+        req.params['created_d1'] = (Date.today - CONFIG[:days_back]).to_s
       end
 
       unless response.success?
@@ -58,7 +58,7 @@ module INatChannel
     # use this endpoint for locale setting
     response = faraday.get('https://api.inaturalist.org/v2/observations') do |req|
       req.params['uuid'] = uuid
-      req.params['locale'] = config[:base_query][:locale]
+      req.params['locale'] = CONFIG[:base_query][:locale]
       req.params['fields'] = SINGLE_FIELDS
     end
 
@@ -83,7 +83,7 @@ module INatChannel
   def faraday
     @faraday ||= Faraday.new do |f|
       f.request :retry, 
-        max: (config[:retries] || 3), 
+        max: (CONFIG[:retries] || 3), 
         interval: 2.0,
         interval_randomness: 0.5,  
         exceptions: [
@@ -102,7 +102,7 @@ module INatChannel
   def telegram_faraday
     @faraday ||= Faraday.new do |f|
       f.request :retry, 
-        max: (config[:retries] || 3), 
+        max: (CONFIG[:retries] || 3), 
         interval: 2.0,
         interval_randomness: 0.5,  
         exceptions: [

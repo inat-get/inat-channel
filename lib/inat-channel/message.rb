@@ -54,11 +54,11 @@ module INatChannel
   end
 
   def place_block place_ids
-    return nil unless config[:places]
+    return nil unless CONFIG[:places]
 
     place_ids = Set[*place_ids]
     found = []
-    config[:places].each do |_, list|
+    CONFIG[:places].each do |_, list|
       list.each do |item|
         item_ids = Set[*item[:place_ids]]
         if place_ids.intersect?(item_ids)
