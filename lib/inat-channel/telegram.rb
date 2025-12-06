@@ -74,7 +74,7 @@ module INatChannel
           f.request :retry, max: INatChannel::CONFIG[:retries], interval: 2.0, interval_randomness: 0.5,  
                     exceptions: [ Faraday::TimeoutError, Faraday::ConnectionFailed, Faraday::SSLError, Faraday::ClientError ]
     
-          if INatChannel::LOGGER.level == Logger::DEBUG
+          if INatChannel::LOGGER.level == ::Logger::DEBUG
             f.response :logger, INatChannel::LOGGER, bodies: true, headers: true 
           end
     

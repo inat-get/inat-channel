@@ -27,13 +27,21 @@ module INatChannel
 
         pool.reject! { |uuid| sent?(uuid) }
         unless pool.empty?
-          result = pool.sample
+          result = pool.to_a.sample
           pool.delete result
           INatChannel::LOGGER.info "Pool uuid selected, #{pool.size} uuids remain in pool"
           return result
         end
 
         nil
+      end
+
+      def pool
+        @pool ||= load_pool
+      end
+
+      def sent
+        @sent ||= load_sent
       end
 
       def save
@@ -43,14 +51,6 @@ module INatChannel
       end
 
       private
-
-      def pool
-        @pool ||= load_pool
-      end
-
-      def sent
-        @sent ||= load_sent
-      end
 
       def sent? uuid
         sent.has_key? uuid
@@ -78,13 +78,13 @@ module INatChannel
         pool.reject! { |uuid| sent?(uuid) }
         file = INatChannel::CONFIG[:pool_file]
         FileUtils.mkdir_p File.dirname(file)
-        File.write JSON.pretty_generate(pool.to_a)
+        File.write file, JSON.pretty_generate(pool.to_a)
       end
 
       def save_sent
         file = INatChannel::CONFIG[:sent_file]
         FileUtils.mkdir_p File.dirname(file)
-        File.write JSON.pretty_generate(sent)
+        File.write file, JSON.pretty_generate(sent)
       end
 
     end

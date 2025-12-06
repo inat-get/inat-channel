@@ -26,10 +26,10 @@ module INatChannel
         end
 
         data = {
-          pid: Process.PID,
+          pid: Process.pid,
           started_at: Time.now.utc.iso8601
         }
-        File.write JSON.pretty_generate(data)
+        File.write file, JSON.pretty_generate(data)
         INatChannel::LOGGER.info "Lock acquired: #{file}"
       end
 

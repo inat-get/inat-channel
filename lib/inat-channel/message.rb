@@ -10,10 +10,10 @@ module INatChannel
 
       def make_message observation
         [
-          taxon_title observation[:taxon],
-          observation_block observation,
-          location_part = "#{ICONS[:location]} #{geo_link(observation)}\n" + (place_block(observation[:place_ids]) || observation[:place_guess]),
-          ancestors_block observation ,
+          taxon_title(observation[:taxon]),
+          observation_block(observation),
+          "#{ICONS[:location]} #{geo_link(observation)}\n" + (place_block(observation[:place_ids]) || observation[:place_guess]),
+          ancestors_block(observation)
         ].join("\n\n")
       end
 

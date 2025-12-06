@@ -84,6 +84,5 @@ module INatChannel
   end
 
   CONFIG = Config::config
-  LOGGER = Config::logger
 
 end

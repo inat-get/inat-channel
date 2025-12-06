@@ -13,7 +13,7 @@ module INatChannel
       private
 
       def get_logger
-        lgr = Logger::new $stderr
+        lgr = ::Logger::new $stderr
         lgr.level = INatChannel::CONFIG[:log_level]
         lgr
       end

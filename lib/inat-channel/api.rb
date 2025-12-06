@@ -19,7 +19,7 @@ module INatChannel
       SINGLE_FIELDS = '(id:!t,uuid:!t,uri:!t,geojson:(all:!t),user:(login:!t,name:!t),taxon:(ancestor_ids:!t,preferred_common_name:!t,name:!t),' +
                       'place_ids:!t,place_guess:!t,observed_on_string:!t,description:!t,photos:(url:!t),identifications:(taxon:(ancestors:(name:!t))))'
 
-      private_const :PER_PAGE, :PAGE_DELAY, :API_ENDPOINT, :LIST_FIELDS, :SINGLE_FIELDS
+      private_constant :PER_PAGE, :PAGE_DELAY, :API_ENDPOINT, :LIST_FIELDS, :SINGLE_FIELDS
 
       def load_news 
         result = []
@@ -37,7 +37,7 @@ module INatChannel
           end
 
           unless response.success?
-            notify_admin "Failed to fetch observations page #{page}: HTTP #{response.status}"
+            INatChannel::Telegram::notify_admin "Failed to fetch observations page #{page}: HTTP #{response.status}"
             INatChannel::LOGGER.error "HTTP #{response.status} on page #{page}"
             break
           end
@@ -47,18 +47,18 @@ module INatChannel
           result += uuids
 
           total = data[:total_results] || 0
-          INatChannel::LOGGER.debug "Page #{page}: fetched #{page_uuids.size} UUIDs, total expected #{total_results}"
+          INatChannel::LOGGER.debug "Page #{page}: fetched #{uuids.size} UUIDs, total expected #{total}"
 
           break if uuids.empty? || result.size >= total
           page += 1
           sleep PAGE_DELAY
         end
 
-        INatChannel::LOGGER.debug "Loaded total #{uuids.uniq.size} unique UUIDs"
+        INatChannel::LOGGER.debug "Loaded total #{result.uniq.size} unique UUIDs"
         result.uniq
       rescue => e
-        notify_admin "Exception while loading news: #{e.message}"
-        logger.error e.full_message
+        INatChannel::Telegram::notify_admin "Exception while loading news: #{e.message}"
+        INatChannel::LOGGER.error e.full_message
         []
       end
 
@@ -76,11 +76,11 @@ module INatChannel
           obs
         else
           INatChannel::LOGGER.error "Error loading observation #{uuid}: HTTP #{response.status}"
-          notify_admin "Error loading observation #{uuid}: HTTP #{response.status}"
+          INatChannel::Telegram::notify_admin "Error loading observation #{uuid}: HTTP #{response.status}"
           nil
         end
       rescue => e
-        notify_admin "Exception while loading observation #{uuid}: #{e.message}"
+        INatChannel::Telegram::notify_admin "Exception while loading observation #{uuid}: #{e.message}"
         INatChannel::LOGGER.error e.full_message
         nil
       end
@@ -93,7 +93,7 @@ module INatChannel
                             exceptions: [ Faraday::TimeoutError, Faraday::ConnectionFailed, Faraday::SSLError, Faraday::ClientError ]
           f.request :url_encoded
 
-          if INatChannel::LOGGER.level == Logger::DEBUG
+          if INatChannel::LOGGER.level == ::Logger::DEBUG
             f.response :logger, INatChannel::LOGGER, bodies: true, headers: true 
           end
 

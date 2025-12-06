@@ -14,7 +14,7 @@ if uuid
   if obs
     msg_id = INCh::Telegram::send_observation(obs)
     INCh::Data::sent[uuid] = { msg_id: msg_id, sent_at: Time.now.to_s }
-    INCh::LOGGER.info "Posted #{obs[:id]} (#{list_photos(obs).size} photos)"
+    INCh::LOGGER.info "Posted #{obs[:id]} (#{INCh::Message::list_photos(obs).size} photos)"  # очень плохо, не должно быть тут вызова list_photos
   else
     INCh::LOGGER.warn "Failed to load #{uuid} — returning to pool"
     INCh::Data::pool << uuid 
