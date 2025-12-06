@@ -3,104 +3,110 @@ require 'json'
 require 'faraday'
 require 'faraday/retry'
 
+require_relative 'config'
+require_relative 'logger'
+
 module INatChannel
 
-  PER_PAGE = 200
-  DELAY = 1.0
+  module API
 
-  LIST_FIELDS = 'uuid'
-  SINGLE_FIELDS = '(id:!t,uuid:!t,uri:!t,geojson:(all:!t),user:(login:!t,name:!t),taxon:(ancestor_ids:!t,preferred_common_name:!t,name:!t),' +
-                  'place_ids:!t,place_guess:!t,observed_on_string:!t,description:!t,photos:(url:!t),identifications:(taxon:(ancestors:(name:!t))))'
+    class << self
 
-  def load_news
-  
-    uuids = []
-    page = 1
+      PER_PAGE = 200
+      PAGE_DELAY = 1.0
+      API_ENDPOINT = 'https://api.inaturalist.org/v2/observations'
+      LIST_FIELDS = 'uuid'
+      SINGLE_FIELDS = '(id:!t,uuid:!t,uri:!t,geojson:(all:!t),user:(login:!t,name:!t),taxon:(ancestor_ids:!t,preferred_common_name:!t,name:!t),' +
+                      'place_ids:!t,place_guess:!t,observed_on_string:!t,description:!t,photos:(url:!t),identifications:(taxon:(ancestors:(name:!t))))'
 
-    loop do
-      logger.debug "Fetch page #{page} with per_page=#{PER_PAGE}"
-      response = faraday.get('https://api.inaturalist.org/v2/observations') do |req|
-        req.params['page'] = page
-        req.params['per_page'] = PER_PAGE
-        req.params['fields'] = LIST_FIELDS
-        req.params.merge!(CONFIG[:base_query])   # base query in config is Hash
-        req.params['created_d1'] = (Date.today - CONFIG[:days_back]).to_s
+      private_const :PER_PAGE, :PAGE_DELAY, :API_ENDPOINT, :LIST_FIELDS, :SINGLE_FIELDS
+
+      def load_news 
+        result = []
+        page = 1
+
+        loop do 
+          INatChannel::LOGGER.debug "Fetch page #{page} with per_page=#{PER_PAGE}"
+
+          response = faraday.get API_ENDPOINT do |req|
+            req.params['page'] = page
+            req.params['per_page'] = PER_PAGE
+            req.params['fields'] = LIST_FIELDS
+            req.params.merge! INatChannel::CONFIG[:base_query]
+            req.params['created_d1'] = (Date.today - INatChannel::CONFIG[:days_back]).to_s
+          end
+
+          unless response.success?
+            notify_admin "Failed to fetch observations page #{page}: HTTP #{response.status}"
+            INatChannel::LOGGER.error "HTTP #{response.status} on page #{page}"
+            break
+          end
+
+          data = JSON.parse response.body, symbolize_names: true
+          uuids = data[:results].map { |o| o[:uuid] }
+          result += uuids
+
+          total = data[:total_results] || 0
+          INatChannel::LOGGER.debug "Page #{page}: fetched #{page_uuids.size} UUIDs, total expected #{total_results}"
+
+          break if uuids.empty? || result.size >= total
+          page += 1
+          sleep PAGE_DELAY
+        end
+
+        INatChannel::LOGGER.debug "Loaded total #{uuids.uniq.size} unique UUIDs"
+        result.uniq
+      rescue => e
+        notify_admin "Exception while loading news: #{e.message}"
+        logger.error e.full_message
+        []
       end
 
-      unless response.success?
-        notify_admin "Failed to fetch observations page #{page}: HTTP #{response.status}"
-        logger.error "HTTP #{response.status} on page #{page}"
-        break
+      def load_observation uuid
+        response = faraday.get API_ENDPOINT do |req|
+          req.params['uuid'] = uuid
+          req.params['locale'] = INatChannel::CONFIG[:base_query][:locale] if INatChannel::CONFIG[:base_query][:locale]
+          req.params['fields'] = SINGLE_FIELDS
+        end
+
+        if response.success?
+          data = JSON.parse response.body, symbolize_names: true
+          obs = data[:results]&.first
+          INatChannel::LOGGER.debug "Loaded observation: #{uuid}"
+          obs
+        else
+          INatChannel::LOGGER.error "Error loading observation #{uuid}: HTTP #{response.status}"
+          notify_admin "Error loading observation #{uuid}: HTTP #{response.status}"
+          nil
+        end
+      rescue => e
+        notify_admin "Exception while loading observation #{uuid}: #{e.message}"
+        INatChannel::LOGGER.error e.full_message
+        nil
       end
 
-      data = JSON.parse response.body, symbolize_names: true
-      page_uuids = data[:results].map { |obs| obs[:uuid] }
-      uuids.concat page_uuids
+      private
 
-      total_results = data[:total_results] || 0
-      logger.info "Page #{page}: fetched #{page_uuids.size} UUIDs, total expected #{total_results}"
+      def faraday
+        @faraday ||= Faraday::new do |f|
+          f.request :retry, max: INatChannel::CONFIG[:retries], interval: 2.0, interval_randomness: 0.5,
+                            exceptions: [ Faraday::TimeoutError, Faraday::ConnectionFailed, Faraday::SSLError, Faraday::ClientError ]
+          f.request :url_encoded
 
-      break if page_uuids.empty? || (uuids.size >= total_results)
-      page += 1
+          if logger.level == Logger::DEBUG
+            f.response :logger, logger, bodies: true, headers: true 
+          end
 
-      sleep DELAY
+          f.adapter Faraday::default_adapter
+        end
+      end
+
     end
 
-    logger.info "Loaded total #{uuids.uniq.size} unique UUIDs"
-    uuids.uniq
-  rescue => e
-    notify_admin "Exception while loading news: #{e.message}"
-    logger.error e.full_message
-    []
-  end
-
-  def load_observation(uuid)
-    # use this endpoint for locale setting
-    response = faraday.get('https://api.inaturalist.org/v2/observations') do |req|
-      req.params['uuid'] = uuid
-      req.params['locale'] = CONFIG[:base_query][:locale]
-      req.params['fields'] = SINGLE_FIELDS
-    end
-
-    if response.success?
-      data = JSON.parse response.body, symbolize_names: true
-      obs = data[:results]&.first
-      logger.debug "Loaded observation #{uuid}"
-      obs
-    else
-      notify_admin("Failed to load observation #{uuid}: HTTP #{response.status}")
-      logger.error "Error loading observation #{uuid}: HTTP #{response.status}"
-      nil
-    end
-  rescue => e
-    notify_admin("Exception loading observation #{uuid}: #{e.message}")
-    logger.error e.full_message
-    nil
-  end
-
-  private
-
-  def faraday
-    @faraday ||= Faraday.new do |f|
-      f.request :retry, 
-        max: (CONFIG[:retries] || 3), 
-        interval: 2.0,
-        interval_randomness: 0.5,  
-        exceptions: [
-         Faraday::TimeoutError,
-          Faraday::ConnectionFailed,
-          Faraday::SSLError,
-          Faraday::ClientError  # 4xx/5xx
-        ]
-    
-      f.request :url_encoded           
-
-      f.adapter Faraday.default_adapter
-    end
   end
 
   def telegram_faraday
-    @faraday ||= Faraday.new do |f|
+    @telegram_faraday ||= Faraday.new do |f|
       f.request :retry, 
         max: (CONFIG[:retries] || 3), 
         interval: 2.0,

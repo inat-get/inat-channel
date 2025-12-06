@@ -1,4 +1,4 @@
-
+require_relative 'inat-channel/version'
 require_relative 'inat-channel/config'
 require_relative 'inat-channel/logger'
 require_relative 'inat-channel/lock'
@@ -8,6 +8,4 @@ require_relative 'inat-channel/api'
 require_relative 'inat-channel/message'
 require_relative 'inat-channel/telegram'
 
-module INatChannel
-
-end
+INCh = INatChannel

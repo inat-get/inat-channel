@@ -2,29 +2,28 @@
 require_relative '../lib/inat-channel'
 include INatChannel
 
-setup
-logger.info "=== iNatChannel Run ==="
+INCh::LOGGER.info "=== iNatChannel Run ==="
 
-# 1. Загружаем свежие UUIDs
-news = load_news
-logger.info "Found #{news.size} fresh UUIDs (days_back=#{CONFIG[:days_back]})"
+news = INCh::API::load_news
+INCh::LOGGER.info "Found #{news.size} fresh UUIDs (days_back=#{CONFIG[:days_back]})"
 
-uuid = INatChannel::Data::select_uuid news
+uuid = INCh::Data::select_uuid news
 
 if uuid
-  obs = load_observation(uuid)
+  obs = INCh::API::load_observation(uuid)
   if obs
     msg_id = send_observation(obs)
-    INatChannel::Data::sent[uuid] = { msg_id: msg_id, sent_at: Time.now.to_s }
-    logger.info "✅ Posted #{obs[:id]} (#{list_photos(obs).size} photos)"
+    INCh::Data::sent[uuid] = { msg_id: msg_id, sent_at: Time.now.to_s }
+    INCh::LOGGER.info "Posted #{obs[:id]} (#{list_photos(obs).size} photos)"
   else
-    logger.warn "❌ Failed to load #{uuid} — returning to pool"
-    INatChannel::Data::pool << uuid 
-    notify_admin "❌ Failed to load #{uuid} — returning to pool"
+    INCh::LOGGER.warn "Failed to load #{uuid} — returning to pool"
+    INCh::Data::pool << uuid 
+    notify_admin "Failed to load #{uuid} — returning to pool"
   end
 
-  INatChannel::Data::save
+  INCh::Data::save
 else
-  notify_admin 'ℹ️ No observation to send.'
+  notify_admin 'No observation to send.'
+  INCh::LOGGER.warn 'No observation to send.'
 end
 

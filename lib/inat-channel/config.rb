@@ -2,6 +2,8 @@ require 'optparse'
 require 'yaml'
 require 'logger'
 
+require_relative 'version'
+
 module INatChannel
 
   module Config
