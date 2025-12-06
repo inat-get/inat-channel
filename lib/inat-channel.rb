@@ -1,5 +1,7 @@
 
 require_relative 'inat-channel/config'
+require_relative 'inat-channel/logger'
+require_relative 'inat-channel/lock'
 require_relative 'inat-channel/icons'
 require_relative 'inat-channel/data'
 require_relative 'inat-channel/api'
