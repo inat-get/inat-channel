@@ -12,11 +12,6 @@ module INatChannel
         @config ||= get_config.freeze
       end
 
-      # TODO: вынести в отдельный модуль все, что связано
-      def logger
-        @logger ||= get_logger
-      end
-
       private
 
       def get_config
@@ -28,17 +23,6 @@ module INatChannel
         env = load_env
         cfg.merge! env
         validate_and_fix_config! cfg
-        # TODO: вынести работу с lock-файлом отсюда в инициализацию модуля данных
-        acquire_lock!
-        trap 'INT' do 
-          release_lock
-          exit 
-        end
-        trap 'TERM' do 
-          release_lock 
-          exit 
-        end
-
         cfg
       end
 
@@ -79,12 +63,6 @@ module INatChannel
           telegram_bot_token: (ENV['TELEGRAM_BOT_TOKEN'] or raise 'TELEGRAM_BOT_TOKEN required'),
           admin_telegram_id:  (ENV['ADMIN_TELEGRAM_ID']  or raise 'ADMIN_TELEGRAM_ID required')
         }
-      end
-
-      def get_logger
-        lgr = Logger::new $stderr
-        lgr.level = config[:log_level]
-        lgr
       end
 
       def validate_and_fix_config! cfg
