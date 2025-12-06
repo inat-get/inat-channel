@@ -11,8 +11,8 @@ module INatChannel
       TELEGRAM_API = 'https://api.telegram.org/bot'
 
       def send_observation observation
-        photos = list_photos observation
-        message = make_message observation
+        photos = INatChannel::Message::list_photos observation
+        message = INatChannel::Message::make_message observation
 
         unless photos.empty?
           msg_id = send_media_group INatChannel::CONFIG[:chat_id], photos[0..9], message
