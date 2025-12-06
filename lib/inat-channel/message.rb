@@ -49,11 +49,29 @@ module INatChannel
         date_part = "#{ICONS[:calendar]} #{observation[:observed_on_string]}"
         description = observation[:description]&.gsub(/<[^>]*>/, "")
         description_part = if description && !description.empty?
-            "\n#{ICONS[:description]} #{description}"
+            "\n#{ICONS[:description]} #{limit_text(description, 320)}"
           else
             ""
           end
         "#{observation_part}\n#{date_part}\n#{user_part}#{description_part}"
+      end
+
+      def limit_text text, limit
+        return text if text.length <= limit
+        truncated = text[0, limit]
+        last_space = truncated.rindex /\s/
+        last_sign = truncated.rindex /[,.;:!?]/
+        if last_space
+          if last_sign && last_sign + 1 > last_space
+            return truncated[0, last_sign + 1]
+          end
+          return truncated[0, last_space]
+        else
+          if last_sign
+            return truncated[0, last_sign + 1]
+          end
+          return truncated
+        end
       end
 
       def place_block place_ids
