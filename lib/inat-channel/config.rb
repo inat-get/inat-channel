@@ -43,8 +43,7 @@ module INatChannel
             options[:log_level] = :debug
           end
           opts.on '--version', 'Show version info and exit' do
-            # TODO: implement
-            #   нужно вынести версию в отдельный модули, используемый как здесь, так и в .gemspec
+            puts INatChannel::VERSION
             exit
           end
           opts.on '-h', '--help', 'Show help and exit' do
