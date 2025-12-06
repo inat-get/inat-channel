@@ -93,8 +93,8 @@ module INatChannel
                             exceptions: [ Faraday::TimeoutError, Faraday::ConnectionFailed, Faraday::SSLError, Faraday::ClientError ]
           f.request :url_encoded
 
-          if logger.level == Logger::DEBUG
-            f.response :logger, logger, bodies: true, headers: true 
+          if INatChannel::LOGGER.level == Logger::DEBUG
+            f.response :logger, INatChannel::LOGGER, bodies: true, headers: true 
           end
 
           f.adapter Faraday::default_adapter
@@ -103,27 +103,6 @@ module INatChannel
 
     end
 
-  end
-
-  def telegram_faraday
-    @telegram_faraday ||= Faraday.new do |f|
-      f.request :retry, 
-        max: (CONFIG[:retries] || 3), 
-        interval: 2.0,
-        interval_randomness: 0.5,  
-        exceptions: [
-         Faraday::TimeoutError,
-          Faraday::ConnectionFailed,
-          Faraday::SSLError,
-          Faraday::ClientError  # 4xx/5xx
-        ]
-    
-      if logger.level == Logger::DEBUG
-        f.response :logger, logger, bodies: true, headers: true 
-      end
-    
-      f.adapter Faraday.default_adapter
-    end
   end
 
 end

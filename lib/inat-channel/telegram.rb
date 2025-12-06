@@ -1,71 +1,89 @@
+require_relative 'config'
+require_relative 'logger'
+require_relative 'message'
 
 module INatChannel
 
-  TELEGRAM_API = 'https://api.telegram.org/bot'.freeze
+  module Telegram
 
-  def send_observation(observation)
-    photos = list_photos(observation)
-    message = make_message(observation)
-    
-    if photos.any?
-      main_msg_id = send_media_group(config[:chat_id], photos[0..9], message)
-    else
-      main_msg_id = send_message(config[:chat_id], message)
-    end
-    
-    sent[observation[:uuid].intern] = { msg_id: main_msg_id, sent_at: Time.now.to_s }
-    logger.info "✅ Posted #{observation[:id]} (#{photos.size} photos)"
-    main_msg_id
-  end
+    class << self
 
-  private
+      TELEGRAM_API = 'https://api.telegram.org/bot'
 
-  def send_message(chat_id, text)
-    response = telegram_faraday.post("#{TELEGRAM_API}#{telegram_token}/sendMessage") do |req|
-      req.params['chat_id'] = chat_id
-      req.params['text'] = text
-      req.params['parse_mode'] = 'HTML'
-    end
-  
-    data = response.body  # уже символизированный хэш!
-    unless data[:ok]
-      raise "Telegram error: #{data[:description]} (#{data[:error_code]})"
-    end
-  
-    data[:result][:message_id]
-  end
+      def send_observation observation
+        photos = list_photos observation
+        message = make_message observation
 
-  def send_media_group(chat_id, photo_urls, caption)
-    media = photo_urls.map.with_index do |url, i|
-      if i == photo_urls.size - 1
-        { type: 'photo', media: url, caption: caption, parse_mode: 'HTML' }
-      else
-        { type: 'photo', media: url }
+        unless photos.empty?
+          msg_id = send_media_group INatChannel::CONFIG[:chat_id], photos[0..9], message
+        else
+          msg_id = send_message INatChannel::CONFIG[:chat_id], message
+        end
+
+        INatChannel::Data::sent[observation[:uuid]] = { msg_id: msg_id, sent_at: Time.now.to_s }
+        INatChannel::LOGGER.info "Posted #{observation[:id]} (#{photos.size} photos)"
+        msg_id
       end
-    end.to_json
 
-    response = telegram_faraday.post("#{TELEGRAM_API}#{telegram_token}/sendMediaGroup") do |req|
-      req.params['chat_id'] = chat_id
-      req.headers['Content-Type'] = 'application/json'
-      req.body = { media: media }.to_json  # media в теле!
+      def notify_admin(text)
+        send_message(notify_telegram_id, "❌ iNatChannel: #{text}")
+      rescue
+        INatChannel::LOGGER.error "Admin notify failed"
+      end
+
+      private
+
+      def token 
+        @token ||= INatChannel::CONFIG[:telegram_bot_token]
+      end
+
+      def send_message chat_id, text
+        response = faraday.post "#{TELEGRAM_API}#{token}/sendMessage" do |req|
+          req.params['chat_id'] = chat_id
+          req.headers['Content-Type'] = 'application/json'
+          req.body = { text: text, parse_mode: 'HTML' }.to_json
+        end
+      
+        data = JSON.parse response.body, symbolize_names: true
+        raise "Telegram error: #{data[:description]} (#{data[:error_code]})" unless data[:ok]
+        data[:result][:message_id]
+      end
+
+      def send_media_group chat_id, photo_urls, caption
+        media = photo_urls.map.with_index do |url, i|
+          if i == photo_urls.size - 1
+            { type: 'photo', media: url, caption: caption, parse_mode: 'HTML' }
+          else
+            { type: 'photo', media: url }
+          end
+        end.to_json
+
+        response = faraday.post "#{TELEGRAM_API}#{token}/sendMediaGroup" do |req|
+          req.params['chat_id'] = chat_id
+          req.headers['Content-Type'] = 'application/json'
+          req.body = { media: media }.to_json
+        end
+
+        data = JSON.parse response.body, symbolize_names: true
+        raise "Telegram error: #{data[:description]} (#{data[:error_code]})" unless data[:ok]
+        data[:result].last[:message_id]
+      end
+
+      def faraday
+        @faraday ||= Faraday.new do |f|
+          f.request :retry, max: INatChannel::CONFIG[:retries], interval: 2.0, interval_randomness: 0.5,  
+                    exceptions: [ Faraday::TimeoutError, Faraday::ConnectionFailed, Faraday::SSLError, Faraday::ClientError ]
+    
+          if INatChannel::LOGGER.level == Logger::DEBUG
+            f.response :logger, INatChannel::LOGGER, bodies: true, headers: true 
+          end
+    
+          f.adapter Faraday.default_adapter
+        end
+      end
+
     end
-  
-    data = JSON.parse response.body, symbolize_names: true
-    unless data[:ok]
-      raise "Telegram error: #{data[:description]} (#{data[:error_code]})"
-    end
-  
-    data[:result].last[:message_id]
-  end
 
-  # def telegram_token
-  #   @telegram_token
-  # end
-
-  def notify_admin(text)
-    send_message(notify_telegram_id, "❌ iNatChannel: #{text}")
-  rescue
-    logger.error "Admin notify failed"
   end
 
 end
