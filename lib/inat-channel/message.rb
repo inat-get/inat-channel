@@ -63,14 +63,14 @@ module INatChannel
         last_sign = truncated.rindex /[,.;:!?]/
         if last_space
           if last_sign && last_sign + 1 > last_space
-            return truncated[0, last_sign + 1]
+            return truncated[0, last_sign + 1] + '...'
           end
-          return truncated[0, last_space]
+          return truncated[0, last_space] + '...'
         else
           if last_sign
-            return truncated[0, last_sign + 1]
+            return truncated[0, last_sign + 1] + '...'
           end
-          return truncated
+          return truncated + '...'
         end
       end
 
