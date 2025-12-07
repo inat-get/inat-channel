@@ -43,7 +43,11 @@ module INatChannel
 
       def observation_block observation
         user = observation[:user]
-        user_title = user[:name] || "<code>#{user[:login]}</code>"
+        user_title = if user[:name] && !user[:name].empty?
+          user[:name] 
+        else
+          "<code>#{user[:login]}</code>"
+        end
         user_link = "https://www.inaturalist.org/people/#{user[:login]}"
         observation_part = "#{INatChannel::Icons::ICONS[:observation]} <a href='#{observation[:uri]}'><b>\##{observation[:id]}</b></a>"
         user_part = "#{INatChannel::Icons::ICONS[:user]} <a href='#{user_link}'>#{user_title}</a>"
