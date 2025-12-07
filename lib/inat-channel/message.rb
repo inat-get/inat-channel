@@ -60,8 +60,8 @@ module INatChannel
       def limit_text text, limit
         return text if text.length <= limit
         truncated = text[0, limit]
-        last_space = truncated.rindex /\s/
-        last_sign = truncated.rindex /[,.;:!?]/
+        last_space = truncated.rindex(/\s/)
+        last_sign = truncated.rindex(/[,.;:!?]/)
         if last_space
           if last_sign && last_sign + 1 > last_space
             return truncated[0, last_sign + 1] + '...'

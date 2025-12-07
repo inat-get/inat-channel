@@ -25,8 +25,8 @@ module INatChannel
         msg_id
       end
 
-      def notify_admin(text)
-        send_message(notify_telegram_id, "❌ iNatChannel: #{text}")
+      def notify_admin text
+        send_message(INatChannel::CONFIG[:admin_telegram_id], "iNatChannel: #{text}")
       rescue
         INatChannel::LOGGER.error "Admin notify failed"
       end
