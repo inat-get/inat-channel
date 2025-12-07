@@ -2,6 +2,8 @@
 
 [![GitHub License](https://img.shields.io/github/license/inat-get/inat-channel)](LICENSE)
 [![Gem Version](https://badge.fury.io/rb/inat-channel.svg?icon=si%3Arubygems&d=2)](https://badge.fury.io/rb/inat-channel)
+[![Ruby](https://github.com/inat-get/inat-channel/actions/workflows/ruby.yml/badge.svg)](https://github.com/inat-get/inat-channel/actions/workflows/ruby.yml) 
+![Coverage](coverage-badge.svg)
 
 **Автоматический бот**, который ежедневно публикует в Telegram-каналы случайные, популярные наблюдения из iNaturalist, согласно гибким настройкам API-запросов.
 
