@@ -1,5 +1,5 @@
 require 'set'
-
+require 'sanitize'
 require_relative 'config'
 require_relative 'icons'
 
@@ -48,7 +48,7 @@ module INatChannel
         observation_part = "#{INatChannel::Icons::ICONS[:observation]} <a href='#{observation[:uri]}'><b>\##{observation[:id]}</b></a>"
         user_part = "#{INatChannel::Icons::ICONS[:user]} <a href='#{user_link}'>#{user_title}</a>"
         date_part = "#{INatChannel::Icons::ICONS[:calendar]} #{observation[:observed_on_string]}"
-        description = observation[:description]&.gsub(/<[^>]*>/, "")
+        description = observation[:description] && Sanitize.fragment(observation[:description])
         description_part = if description && !description.empty?
             "\n#{INatChannel::Icons::ICONS[:description]} #{limit_text(description, 500)}"
           else
