@@ -1,6 +1,7 @@
 require 'set'
 
 require_relative 'config'
+require_relative 'icons'
 
 module INatChannel
 
@@ -12,7 +13,7 @@ module INatChannel
         [
           taxon_title(observation[:taxon]),
           observation_block(observation),
-          "#{ICONS[:location]} #{geo_link(observation)}\n" + (place_block(observation[:place_ids]) || observation[:place_guess]),
+          "#{INatChannel::Icons::ICONS[:location]} #{geo_link(observation)}\n" + (place_block(observation[:place_ids]) || observation[:place_guess]),
           ancestors_block(observation)
         ].join("\n\n")
       end
@@ -25,7 +26,7 @@ module INatChannel
       private
 
       def taxon_title taxon
-        icon = taxon_icon taxon
+        icon = INatChannel::Icons::taxon_icon taxon
         link = "https://www.inaturalist.org/taxa/#{taxon[:id]}"
 
         common_name = taxon[:preferred_common_name]
@@ -44,12 +45,12 @@ module INatChannel
         user = observation[:user]
         user_title = user[:name] || "<code>#{user[:login]}</code>"
         user_link = "https://www.inaturalist.org/people/#{user[:login]}"
-        observation_part = "#{ICONS[:observation]} <a href='#{observation[:uri]}'><b>\##{observation[:id]}</b></a>"
-        user_part = "#{ICONS[:user]} <a href='#{user_link}'>#{user_title}</a>"
-        date_part = "#{ICONS[:calendar]} #{observation[:observed_on_string]}"
+        observation_part = "#{INatChannel::Icons::ICONS[:observation]} <a href='#{observation[:uri]}'><b>\##{observation[:id]}</b></a>"
+        user_part = "#{INatChannel::Icons::ICONS[:user]} <a href='#{user_link}'>#{user_title}</a>"
+        date_part = "#{INatChannel::Icons::ICONS[:calendar]} #{observation[:observed_on_string]}"
         description = observation[:description]&.gsub(/<[^>]*>/, "")
         description_part = if description && !description.empty?
-            "\n#{ICONS[:description]} #{limit_text(description, 320)}"
+            "\n#{INatChannel::Icons::ICONS[:description]} #{limit_text(description, 320)}"
           else
             ""
           end
@@ -92,7 +93,7 @@ module INatChannel
         if found.empty?
           nil
         else
-          found.map { |i| "#{ICONS[:place]} <a href='#{i[:link]}'>#{i[:text]}</a>" }.join("\n")
+          found.map { |i| "#{INatChannel::Icons::ICONS[:place]} <a href='#{i[:link]}'>#{i[:text]}</a>" }.join("\n")
         end
       end
 

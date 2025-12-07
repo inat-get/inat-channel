@@ -20,4 +20,7 @@ Gem::Specification::new do |s|
   s.add_development_dependency "rspec", "~> 3.13"
   s.add_development_dependency "rake", "~> 13.3"
   s.add_development_dependency "simplecov", "~> 0.22.0"
+  s.add_development_dependency "webmock", "~> 3.23"
+  s.add_development_dependency "tmpdir", "~> 0.2.0"  
+
 end
