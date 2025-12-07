@@ -50,7 +50,7 @@ module INatChannel
         date_part = "#{INatChannel::Icons::ICONS[:calendar]} #{observation[:observed_on_string]}"
         description = observation[:description]&.gsub(/<[^>]*>/, "")
         description_part = if description && !description.empty?
-            "\n#{INatChannel::Icons::ICONS[:description]} #{limit_text(description, 320)}"
+            "\n#{INatChannel::Icons::ICONS[:description]} #{limit_text(description, 500)}"
           else
             ""
           end
