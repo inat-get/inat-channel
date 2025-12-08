@@ -56,7 +56,14 @@ module INatChannel
 
       def load_config path
         raise "Config file not found: #{path}" unless File.exist?(path)
-        YAML.safe_load_file(path, symbolize_names: true)
+        cfg = YAML.safe_load_file path, symbolize_names: true
+        if String === cfg[:places]
+          path = File.expand_path(path)
+          places_path = File.expand_path(cfg[:places], File.dirname(path))
+          places = YAML.safe_load_file places_path, symbolize_names: true
+          cfg[:places] = places
+        end
+        cfg
       end
 
       def load_env

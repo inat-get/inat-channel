@@ -1,6 +1,6 @@
 
 module INatChannel
 
-  VERSION = '0.8.0.14'
+  VERSION = '0.8.2'
 
 end
