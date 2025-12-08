@@ -1,7 +1,9 @@
 require 'set'
 require 'sanitize'
+
 require_relative 'config'
 require_relative 'icons'
+require_relative 'template'
 
 module INatChannel
 
@@ -16,6 +18,15 @@ module INatChannel
           "#{INatChannel::Icons::ICONS[:location]} #{geo_link(observation)}\n" + (place_block(observation[:place_ids]) || observation[:place_guess]),
           ancestors_block(observation)
         ].join("\n\n")
+      end
+
+      def make_message2 observation
+        template = if INatChannel::CONFIG[:template]
+          INatChannel::Template::load INatChannel::CONFIG[:template]
+        else
+          INatChannel::Template::default
+        end
+        template.process observation
       end
 
       def list_photos observation

@@ -12,7 +12,7 @@ module INatChannel
 
       def send_observation observation
         photos = INatChannel::Message::list_photos observation
-        message = INatChannel::Message::make_message observation
+        message = INatChannel::Message::make_message2 observation
 
         unless photos.empty?
           msg_id = send_media_group INatChannel::CONFIG[:chat_id], photos[0..9], message

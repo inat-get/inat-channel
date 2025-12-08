@@ -17,7 +17,8 @@ module INatChannel
       API_ENDPOINT = 'https://api.inaturalist.org/v2/observations'
       LIST_FIELDS = 'uuid'
       SINGLE_FIELDS = '(id:!t,uuid:!t,uri:!t,geojson:(all:!t),user:(login:!t,name:!t),taxon:(ancestor_ids:!t,preferred_common_name:!t,name:!t),' +
-                      'place_ids:!t,place_guess:!t,observed_on_string:!t,description:!t,photos:(url:!t),identifications:(taxon:(ancestors:(name:!t))))'
+                      'place_ids:!t,place_guess:!t,observed_on_string:!t,description:!t,photos:(url:!t),time_observed_at:!t,' +
+                      'identifications:(taxon:(ancestors:(name:!t))))'
 
       private_constant :PER_PAGE, :PAGE_DELAY, :API_ENDPOINT, :LIST_FIELDS, :SINGLE_FIELDS
 

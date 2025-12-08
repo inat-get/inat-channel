@@ -56,3 +56,4 @@ build-iPhoneSimulator/
 # .rubocop-https?--*
 inat-channel_struct.md
 .vscode
+spec/tmp/
