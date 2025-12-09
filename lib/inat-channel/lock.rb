@@ -49,7 +49,7 @@ module INatChannel
         {}
       end
 
-      LOCK_TTL = 1800  # 30 min
+      LOCK_TTL = 300  # 5 min
 
       def stale? data
         if data[:started_at]
