@@ -9,19 +9,19 @@ require_relative 'lock'
 
 module INatChannel
 
-  module Data 
+  module Data
 
     class << self
 
       def select_uuid fresh
-        INatChannel::LOGGER.info "Received #{fresh.size} uuids"
+        IC::logger.info "Received #{fresh.size} uuids"
 
         fresh.reject! { |uuid| sent?(uuid) }
         unless fresh.empty?
           result = fresh.sample
           fresh.delete result
           pool.merge fresh
-          INatChannel::LOGGER.info "Fresh uuid selected, #{fresh.size} uuids added to pool"
+          IC::logger.info "Fresh uuid selected, #{fresh.size} uuids added to pool"
           return result
         end
 
@@ -29,7 +29,7 @@ module INatChannel
         unless pool.empty?
           result = pool.to_a.sample
           pool.delete result
-          INatChannel::LOGGER.info "Pool uuid selected, #{pool.size} uuids remain in pool"
+          IC::logger.info "Pool uuid selected, #{pool.size} uuids remain in pool"
           return result
         end
 
@@ -47,7 +47,7 @@ module INatChannel
       def save
         save_pool
         save_sent
-        INatChannel::LOGGER.info "Saved pool=#{pool.size}, sent=#{sent.size}"
+        IC::logger.info "Saved pool=#{pool.size}, sent=#{sent.size}"
       end
 
       private
@@ -57,7 +57,7 @@ module INatChannel
       end
 
       def load_pool
-        file = INatChannel::CONFIG[:pool_file]
+        file = IC::CONFIG[:pool_file]
         data = JSON.parse File.read(file), symbolize_names: false
         raise "Invalid format of pool file" unless Array === data
         Set[*data]
@@ -66,7 +66,7 @@ module INatChannel
       end
 
       def load_sent
-        file = INatChannel::CONFIG[:sent_file]
+        file = IC::CONFIG[:sent_file]
         data = JSON.parse File.read(file), symbolize_names: false
         raise "Invalid format of sent file" unless Hash === data
         data
@@ -76,13 +76,13 @@ module INatChannel
 
       def save_pool
         pool.reject! { |uuid| sent?(uuid) }
-        file = INatChannel::CONFIG[:pool_file]
+        file = IC::CONFIG[:pool_file]
         FileUtils.mkdir_p File.dirname(file)
         File.write file, JSON.pretty_generate(pool.to_a)
       end
 
       def save_sent
-        file = INatChannel::CONFIG[:sent_file]
+        file = IC::CONFIG[:sent_file]
         FileUtils.mkdir_p File.dirname(file)
         File.write file, JSON.pretty_generate(sent)
       end
@@ -90,5 +90,27 @@ module INatChannel
     end
 
   end
+
+end
+
+module IC
+
+  def select_uuid fresh
+    INatChannel::Data::select_uuid fresh
+  end
+
+  def pool
+    INatChannel::Data::pool
+  end
+
+  def sent
+    INatChannel::Data::sent
+  end
+
+  def save_data
+    INatChannel::Data::save
+  end
+
+  module_function :select_uuid, :pool, :sent, :save_data
 
 end

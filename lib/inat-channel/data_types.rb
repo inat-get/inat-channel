@@ -4,7 +4,7 @@ require 'sanitize'
 
 require_relative 'icons'
 
-module INatChannel
+module IC
   FORMATS = {
     date: '%Y.%m.%d',
     time: '%H:%M %Z',
@@ -17,42 +17,45 @@ end
 
 class Date
   def icon
-    INatChannel::Icons::ICONS[:calendar]
+    IC::ICONS[:calendar]
   end
+  alias_method :old_to_s, :to_s
   def to_s
-    fmt = INatChannel::FORMATS[:date]
+    fmt = IC::FORMATS[:date]
     if fmt
       self.strftime fmt
     else
-      super
+      old_to_s
     end
   end
 end
 
 class Time
   def icon
-    INatChannel::Icons::clock_icon self
+    IC::clock_icon self
   end
+  alias_method :old_to_s, :to_s
   def to_s
-    fmt = INatChannel::FORMATS[:time]
+    fmt = IC::FORMATS[:time]
     if fmt
       self.strftime fmt
     else
-      super
+      old_to_s
     end
   end
 end
 
 class DateTime
   def icon
-    INatChannel::Icons::ICONS[:calendar]
+    IC::ICONS[:calendar]
   end
+  alias_method :old_to_s, :to_s
   def to_s
-    fmt = INatChannel::FORMATS[:datetime]
+    fmt = IC::FORMATS[:datetime]
     if fmt
       self.strftime fmt
     else
-      super
+      old_to_s
     end
   end
 end
@@ -95,7 +98,7 @@ end
 
 Observation = Struct::new :taxon, :id, :uuid, :url, :user, :datetime, :places, :place_guess, :description, :location, keyword_init: true do
   def icon
-    INatChannel::Icons::ICONS[:observation]
+    IC::ICONS[:observation]
   end
   def date
     datetime.to_date
@@ -107,7 +110,7 @@ end
 
 Taxon = Struct::new :scientific_name, :common_name, :id, :ancestors, keyword_init: true do
   def icon
-    INatChannel::Icons::ancestors_icon ancestors.map(&:id)
+    IC::ancestors_icon ancestors.map(&:id)
   end
   def title
     if common_name && !common_name.empty?
@@ -132,7 +135,7 @@ end
 
 Place = Struct::new :ids, :text, :link, :tag, keyword_init: true do
   def icon
-    INatChannel::Icons::ICONS[:place]
+    IC::ICONS[:place]
   end
   def to_tag
     tag&.to_tag
@@ -147,7 +150,7 @@ end
 
 User = Struct::new :id, :login, :name, keyword_init: true do
   def icon
-    INatChannel::Icons::ICONS[:user]
+    IC::ICONS[:user]
   end
   def title
     if name && !name.empty?
@@ -161,28 +164,32 @@ User = Struct::new :id, :login, :name, keyword_init: true do
   end
 end
 
-SANITIZE_HTML_CONFIG = {
-  elements: [ 'b', 'strong', 'i', 'em', 'u', 's', 'strike', 'del', 'a', 'code', 'pre', 'tg-spoiler', 'blockquote' ],
-  attributes: { 'a' => [ 'href' ] },
-  protocols: { 'a' => { 'href' => [ 'http', 'https', 'mailto', 'tg' ] } },
-  remove_contents: [ 'script', 'style' ]
-}
+module IC
 
-SANITIZE_TEXT_CONFIG = {
-  elements: [],
-  remove_contents: [ 'script', 'style' ]
-}
+  SANITIZE_HTML_CONFIG = {
+    elements: [ 'b', 'strong', 'i', 'em', 'u', 's', 'strike', 'del', 'a', 'code', 'pre', 'tg-spoiler', 'blockquote' ],
+    attributes: { 'a' => [ 'href' ] },
+    protocols: { 'a' => { 'href' => [ 'http', 'https', 'mailto', 'tg' ] } },
+    remove_contents: [ 'script', 'style' ]
+  }
+
+  SANITIZE_TEXT_CONFIG = {
+    elements: [],
+    remove_contents: [ 'script', 'style' ]
+  }
+
+end
 
 Description = Struct::new :value, keyword_init: true do
   def icon
-    INatChannel::Icons::ICONS[:description]
+    IC::ICONS[:description]
   end
   def text
-    Sanitize.fragment(value, SANITIZE_TEXT_CONFIG).limit(FORMATS[:description_limit])
+    Sanitize.fragment(value, IC::SANITIZE_TEXT_CONFIG).limit(IC::FORMATS[:description_limit])
   end
   def html
-    sanitized = Sanitize.fragment value, SANITIZE_HTML_CONFIG
-    if sanitized.length > FORMATS[:description_limit]
+    sanitized = Sanitize.fragment value, IC::SANITIZE_HTML_CONFIG
+    if sanitized.length > IC::FORMATS[:description_limit]
       # В отличие от простого текста, обрезка HTML требует куда более изощренной логики, что неоправданно
       text
     else
@@ -193,14 +200,14 @@ end
 
 Location = Struct::new :lat, :lng, keyword_init: true do
   def icon
-    INatChannel::Icons::ICONS[:location]
+    IC::ICONS[:location]
   end
   def title
     lat_dir = lat >= 0 ? 'N' : 'S'
     lng_dir = lng >= 0 ? 'E' : 'W'
     lat_abs = lat.abs
     lng_abs = lng.abs
-    if FORMATS[:location] == :DMS
+    if IC::FORMATS[:location] == :DMS
       lat_d = lat_abs.floor
       lat_m = ((lat_abs - lat_d) * 60).floor
       lat_s = ((lat_abs - lat_d - lat_m / 60.0) * 3600).round
@@ -214,13 +221,13 @@ Location = Struct::new :lat, :lng, keyword_init: true do
   end
   def google
     # "https://www.google.com/maps/search/?api=1&query=#{lat},#{lng}&z=#{FORMATS[:zoom]}&ll=#{lat},#{lng}"
-    "https://www.google.com/maps/place/#{lat},#{lng}/@#{lat},#{lng},#{FORMATS[:zoom]}z/"
+    "https://www.google.com/maps/place/#{lat},#{lng}/@#{lat},#{lng},#{IC::FORMATS[:zoom]}z/"
   end
   def yandex
-    "https://yandex.ru/maps/?ll=#{lng},#{lat}&z=#{FORMATS[:zoom]}&pt=#{lng},#{lat},pm2rdm1"
+    "https://yandex.ru/maps/?ll=#{lng},#{lat}&z=#{IC::FORMATS[:zoom]}&pt=#{lng},#{lat},pm2rdm1"
   end
   def osm
-     "https://www.openstreetmap.org/?mlat=#{lat}&mlon=#{lng}#map=#{FORMATS[:zoom]}/#{lat}/#{lng}"
+     "https://www.openstreetmap.org/?mlat=#{lat}&mlon=#{lng}#map=#{IC::FORMATS[:zoom]}/#{lat}/#{lng}"
   end
   def url
     osm

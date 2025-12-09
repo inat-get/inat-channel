@@ -8,4 +8,3 @@ require_relative 'inat-channel/api'
 require_relative 'inat-channel/message'
 require_relative 'inat-channel/telegram'
 
-INCh = INatChannel

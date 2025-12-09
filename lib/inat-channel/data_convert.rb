@@ -70,7 +70,7 @@ module INatChannel
       end
 
       def convert_places place_ids
-        places_config = INatChannel::CONFIG[:places]
+        places_config = IC::CONFIG[:places]
         return nil unless places_config
         result = []
         places_config.each do |_, items|
@@ -88,5 +88,15 @@ module INatChannel
     end
 
   end
+
+end
+
+module IC 
+
+  def convert_observation source
+    INatChannel::DataConvert::convert_observation source
+  end
+
+  module_function :convert_observation
 
 end

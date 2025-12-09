@@ -89,6 +89,11 @@ module INatChannel
 
   end
 
-  CONFIG = Config::config
+end
+
+module IC
+
+  CONFIG = INatChannel::Config::config
 
 end
+

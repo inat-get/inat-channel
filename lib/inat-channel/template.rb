@@ -14,13 +14,13 @@ module INatChannel
       @template = template
       @data = data
       @renderer = ERB::new @template, trim_mode: '-'
-      INatChannel::Icons::TAXA_ICONS.merge! data[:taxa_icons] if data[:taxa_icons]
-      INatChannel::Icons::ICONS.merge! data[:icons] if data[:icons]
-      INatChannel::FORMATS.merge! data[:formats] if data[:formats]
+      IC::TAXA_ICONS.merge! data[:taxa_icons] if data[:taxa_icons]
+      IC::ICONS.merge! data[:icons] if data[:icons]
+      IC::FORMATS.merge! data[:formats] if data[:formats]
     end
 
     def process observation_source
-      observation = INatChannel::DataConvert::convert_observation observation_source
+      observation = IC::convert_observation observation_source
       vars = {
         observation: observation,
         datetime: observation.datetime,
@@ -30,8 +30,8 @@ module INatChannel
         user: observation.user,
         date: observation.date,
         time: observation.time,
-        icons: INatChannel::Icons::ICONS,
-        taxa_icons: INatChannel::Icons::TAXA_ICONS
+        icons: IC::ICONS,
+        taxa_icons: IC::TAXA_ICONS
       }
       @renderer.result_with_hash vars
     end
@@ -74,7 +74,7 @@ module INatChannel
         <%= icons[:place] %> <%= observation.place_guess %>
         <% end -%>
 
-        <%= taxon.to_tags.join(' • ') %>
+        <%= taxon.to_tags&.join(' • ') %>
       ERB
 
       def default
@@ -85,6 +85,18 @@ module INatChannel
 
     end
 
+  end
+
+end
+
+module IC
+
+  def load_template path
+    INatChannel::Template::load path
+  end
+
+  def default_template
+    INatChannel::Template::default
   end
 
 end

@@ -12,13 +12,13 @@ module INatChannel
     class << self
 
       def acquire!
-        file = INatChannel::CONFIG[:lock_file]
+        file = IC::CONFIG[:lock_file]
         FileUtils.mkdir_p File.dirname(file)
 
         if File.exist?(file)
           data = load_data file
           if stale?(data)
-            INatChannel::LOGGER.info "Remove stale lock: #{file}"
+            IC::logger.info "Remove stale lock: #{file}"
             File.delete file
           else
             raise "Another instance is already running (PID: #{data[:pid]})"
@@ -30,15 +30,15 @@ module INatChannel
           started_at: Time.now.utc.iso8601
         }
         File.write file, JSON.pretty_generate(data)
-        INatChannel::LOGGER.info "Lock acquired: #{file}"
+        IC::logger.info "Lock acquired: #{file}"
       end
 
       def release!
-        file = INatChannel::CONFIG[:lock_file]
+        file = IC::CONFIG[:lock_file]
         return nil unless File.exist?(file)
 
         File.delete file
-        INatChannel::LOGGER.info "Lock release: #{file}"
+        IC::logger.info "Lock release: #{file}"
       end
 
       private

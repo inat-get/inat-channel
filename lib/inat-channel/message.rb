@@ -12,10 +12,10 @@ module INatChannel
     class << self
 
       def make_message observation
-        template = if INatChannel::CONFIG[:template]
-          INatChannel::Template::load INatChannel::CONFIG[:template]
+        template = if IC::CONFIG[:template]
+          IC::load_template IC::CONFIG[:template]
         else
-          INatChannel::Template::default
+          IC::default_template
         end
         template.process observation
       end
@@ -30,3 +30,18 @@ module INatChannel
   end
 
 end
+
+module IC
+
+  def make_message observation
+    INatChannel::Message::make_message observation
+  end
+
+  def list_photos observation
+    INatChannel::Message::list_photos observation
+  end
+
+  module_function :make_message, :list_photos
+
+end
+
