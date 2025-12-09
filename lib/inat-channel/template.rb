@@ -77,6 +77,8 @@ module INatChannel
         <%= taxon.to_tags&.join(' • ') %>
       ERB
 
+      private_constant :DEFAULT_TEMPLATE
+
       def default
         @default ||= new(DEFAULT_TEMPLATE, {}).freeze
       end
