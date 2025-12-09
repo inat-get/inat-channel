@@ -58,7 +58,7 @@ module INatChannel
       DEFAULT_TEMPLATE = <<~ERB
         <%= taxon.icon %> <a href="<%= taxon.url %>"><%= taxon.title %></a>
 
-        <%= observation.icon %> <a href="<%= observation.url %>">#<%= observation.id %></a>
+        <%= observation.icon %> <%= observation.url %>
         <%= datetime.icon %> <%= datetime %>
         <%= user.icon %> <a href="<%= user.url %>"><%= user.title %></a>
         <% if observation.description -%>
