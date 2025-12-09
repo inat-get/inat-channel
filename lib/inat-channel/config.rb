@@ -33,7 +33,7 @@ module INatChannel
         OptionParser.new do |opts|
           opts.banner = 'Usage: inat-channel [options]'
           opts.on '-c', '--config FILE', 'Config file (default: inat-channel.yml)' do |v|
-            raise ArgumentError, "Config file not found: #{v}" unless File.exist?(v)
+            raise "Config file not found: #{v}" unless File.exist?(v)
             options[:config] = v
           end
           opts.on '-l', '--log-level LEVEL', [:debug, :info, :warn, :error], 'Log level (default: warn)' do |v|
@@ -43,7 +43,7 @@ module INatChannel
             options[:log_level] = :debug
           end
           opts.on '--version', 'Show version info and exit' do
-            puts INatChannel::VERSION
+            puts IC::VERSION
             exit
           end
           opts.on '-h', '--help', 'Show help and exit' do
