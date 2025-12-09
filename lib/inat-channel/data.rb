@@ -9,7 +9,7 @@ require_relative 'lock'
 
 module INatChannel
 
-  module Data
+  module Storage
 
     class << self
 
@@ -96,19 +96,19 @@ end
 module IC
 
   def select_uuid fresh
-    INatChannel::Data::select_uuid fresh
+    INatChannel::Storage::select_uuid fresh
   end
 
   def pool
-    INatChannel::Data::pool
+    INatChannel::Storage::pool
   end
 
   def sent
-    INatChannel::Data::sent
+    INatChannel::Storage::sent
   end
 
   def save_data
-    INatChannel::Data::save
+    INatChannel::Storage::save
   end
 
   module_function :select_uuid, :pool, :sent, :save_data
