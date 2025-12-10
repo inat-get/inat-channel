@@ -81,13 +81,18 @@ Usage: inat-channel [options]
 Пример:
 
 ```yaml
-
 base_query:
   project_id: 175821
   locale: ru
   popular: true
   photo_license: 'cc-by,cc-by-nc,cc-by-nd,cc-by-sa,cc-by-nc-nd,cc-by-nc-sa,cc0'
   quality_grade: research
+  
+days_back:
+  fresh: 30
+  pool: 180
+  sent: 181
+  used: 360
   
 lock_file:
   path: data/data.lock
@@ -98,12 +103,6 @@ data_files:
   pool: data/pool.json
   sent: data/sent.json
   used: data/used.json
-  
-days_back:
-  fresh: 30
-  pool: 180
-  sent: 181
-  used: 360
   
 api:
   retries: 10
@@ -116,7 +115,7 @@ tg_bot:
   retries: 10
   interval: 1.0
   randomness: 0.5
-  chat_id: '@sshh_test_channel'
+  chat_id: '@‹my_test_channel›'
   template: message.erb
   desc_limit: 512
   link_zoom: 12
