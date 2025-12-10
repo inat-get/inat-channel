@@ -5,7 +5,7 @@ include IC
 logger.info "=== iNatChannel Run ==="
 
 news = load_news
-logger.info "Found #{news.size} fresh UUIDs (days_back=#{CONFIG[:days_back]})"
+logger.info "Found #{ news.size } fresh UUIDs (days_back=#{ CONFIG.dig :days_back, :fresh })"
 
 uuid = select_uuid news
 

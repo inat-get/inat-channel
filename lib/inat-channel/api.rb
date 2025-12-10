@@ -23,7 +23,7 @@ module INatChannel
       private_constant :PER_PAGE, :PAGE_DELAY, :API_ENDPOINT, :LIST_FIELDS, :SINGLE_FIELDS
 
       def load_news 
-        load_list(**IC::CONFIG[:base_query], created_d1: (Date.today - IC::CONFIG[:days_back]).to_s)
+        load_list(**IC::CONFIG[:base_query], created_d1: (Date.today - IC::CONFIG.dig(:days_back, :fresh)).to_s)
       end
       
       def load_list **query
@@ -90,8 +90,11 @@ module INatChannel
 
       def faraday
         @faraday ||= Faraday::new do |f|
-          f.request :retry, max: IC::CONFIG[:retries], interval: 2.0, interval_randomness: 0.5,
-                            exceptions: [ Faraday::TimeoutError, Faraday::ConnectionFailed, Faraday::SSLError, Faraday::ClientError ]
+          f.request :retry, 
+                    max: IC::CONFIG.dig(:api, :retries), 
+                    interval: IC::CONFIG.dig(:api, :interval), 
+                    interval_randomness: IC::CONFIG.dig(:api, :randomness),
+                    exceptions: [ Faraday::TimeoutError, Faraday::ConnectionFailed, Faraday::SSLError, Faraday::ClientError ]
           f.request :url_encoded
 
           if IC::logger.level == ::Logger::DEBUG

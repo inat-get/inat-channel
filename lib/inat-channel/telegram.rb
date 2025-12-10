@@ -15,9 +15,9 @@ module INatChannel
         message = IC::make_message observation
 
         unless photos.empty?
-          msg_id = send_media_group IC::CONFIG[:chat_id], photos[0..9], message
+          msg_id = send_media_group IC::CONFIG.dig(:tg_bot, :chat_id), photos[0..9], message
         else
-          msg_id = send_message IC::CONFIG[:chat_id], message
+          msg_id = send_message IC::CONFIG.dig(:tg_bot, :chat_id), message
         end
 
         IC::logger.info "Posted #{observation[:id]} (#{photos.size} photos)"
@@ -25,7 +25,7 @@ module INatChannel
       end
 
       def notify_admin text
-        send_message(IC::CONFIG[:admin_telegram_id], "iNatChannel: #{text}")
+        send_message(IC::CONFIG.dig(:tg_bot, :admin_id), "iNatChannel: #{text}")
       rescue
         IC::logger.error "Admin notify failed"
       end
@@ -33,7 +33,7 @@ module INatChannel
       private
 
       def token 
-        @token ||= IC::CONFIG[:telegram_bot_token]
+        @token ||= IC::CONFIG.dig(:tg_bot, :token)
       end
 
       def send_message chat_id, text
@@ -70,7 +70,10 @@ module INatChannel
 
       def faraday
         @faraday ||= Faraday.new do |f|
-          f.request :retry, max: IC::CONFIG[:retries], interval: 2.0, interval_randomness: 0.5,  
+          f.request :retry, 
+                    max: IC::CONFIG.dig(:tg_bot, :retries), 
+                    interval: IC::CONFIG.dig(:tg_bot, :interval), 
+                    interval_randomness: IC::CONFIG.dig(:tg_bot, :randomness),  
                     exceptions: [ Faraday::TimeoutError, Faraday::ConnectionFailed, Faraday::SSLError, Faraday::ClientError ]
     
           if IC::logger.level == ::Logger::DEBUG

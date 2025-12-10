@@ -12,7 +12,7 @@ module INatChannel
     class << self
 
       def acquire!
-        file = IC::CONFIG[:lock_file]
+        file = IC::CONFIG.dig(:lock_file, :path)
         FileUtils.mkdir_p File.dirname(file)
 
         if File.exist?(file)
@@ -34,7 +34,7 @@ module INatChannel
       end
 
       def release!
-        file = IC::CONFIG[:lock_file]
+        file = IC::CONFIG.dig(:lock_file, :path)
         return nil unless File.exist?(file)
 
         File.delete file

@@ -12,8 +12,8 @@ module INatChannel
     class << self
 
       def make_message observation
-        template = if IC::CONFIG[:template]
-          IC::load_template IC::CONFIG[:template]
+        template = if IC::CONFIG.dig(:tg_bot, :template)
+          IC::load_template IC::CONFIG.dig(:tg_bot, :template)
         else
           IC::default_template
         end

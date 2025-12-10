@@ -4,29 +4,9 @@ require 'sanitize'
 
 require_relative 'icons'
 
-module IC
-  FORMATS = {
-    date: '%Y.%m.%d',
-    time: '%H:%M %Z',
-    datetime: '%Y.%m.%d %H:%M %Z',
-    location: :DMS,   # or :decimal
-    zoom: 12,
-    description_limit: 512
-  }
-end
-
 class Date
   def icon
     IC::ICONS[:calendar]
-  end
-  alias_method :old_to_s, :to_s
-  def to_s
-    fmt = IC::FORMATS[:date]
-    if fmt
-      self.strftime fmt
-    else
-      old_to_s
-    end
   end
 end
 
@@ -34,29 +14,11 @@ class Time
   def icon
     IC::clock_icon self
   end
-  alias_method :old_to_s, :to_s
-  def to_s
-    fmt = IC::FORMATS[:time]
-    if fmt
-      self.strftime fmt
-    else
-      old_to_s
-    end
-  end
 end
 
 class DateTime
   def icon
     IC::ICONS[:calendar]
-  end
-  alias_method :old_to_s, :to_s
-  def to_s
-    fmt = IC::FORMATS[:datetime]
-    if fmt
-      self.strftime fmt
-    else
-      old_to_s
-    end
   end
 end
 
@@ -185,11 +147,11 @@ Description = Struct::new :value, keyword_init: true do
     IC::ICONS[:description]
   end
   def text
-    Sanitize.fragment(value, IC::SANITIZE_TEXT_CONFIG).limit(IC::FORMATS[:description_limit])
+    Sanitize.fragment(value, IC::SANITIZE_TEXT_CONFIG).limit(IC::CONFIG.dig(:tg_bot, :desc_limit))
   end
   def html
     sanitized = Sanitize.fragment value, IC::SANITIZE_HTML_CONFIG
-    if sanitized.length > IC::FORMATS[:description_limit]
+    if sanitized.length > IC::CONFIG.dig(:tg_bot, :desc_limit)
       # В отличие от простого текста, обрезка HTML требует куда более изощренной логики, что неоправданно
       text
     else
@@ -202,32 +164,35 @@ Location = Struct::new :lat, :lng, keyword_init: true do
   def icon
     IC::ICONS[:location]
   end
-  def title
-    lat_dir = lat >= 0 ? 'N' : 'S'
-    lng_dir = lng >= 0 ? 'E' : 'W'
+  def dms
+    lat_dir = lat >= 0 ? "N" : "S"
+    lng_dir = lng >= 0 ? "E" : "W"
     lat_abs = lat.abs
     lng_abs = lng.abs
-    if IC::FORMATS[:location] == :DMS
-      lat_d = lat_abs.floor
-      lat_m = ((lat_abs - lat_d) * 60).floor
-      lat_s = ((lat_abs - lat_d - lat_m / 60.0) * 3600).round
-      lng_d = lng_abs.floor
-      lng_m = ((lng_abs - lng_d) * 60).floor
-      lng_s = ((lng_abs - lng_d - lng_m / 60.0) * 3600).round
-      "%d°%02d'%02d\"%s %d°%02d'%02d\"%s" % [ lat_d, lat_m, lat_s, lat_dir, lng_d, lng_m, lng_s, lng_dir ]
-    else
-      "%.4f°%s, %.4f°%s" % [ lat_abs, lat_dir, lng_abs, lng_dir ]
-    end
+    lat_d = lat_abs.floor
+    lat_m = ((lat_abs - lat_d) * 60).floor
+    lat_s = ((lat_abs - lat_d - lat_m / 60.0) * 3600).round
+    lng_d = lng_abs.floor
+    lng_m = ((lng_abs - lng_d) * 60).floor
+    lng_s = ((lng_abs - lng_d - lng_m / 60.0) * 3600).round
+    "%d°%02d'%02d\"%s %d°%02d'%02d\"%s" % [lat_d, lat_m, lat_s, lat_dir, lng_d, lng_m, lng_s, lng_dir]
+  end
+  def decimal
+    lat_dir = lat >= 0 ? "N" : "S"
+    lng_dir = lng >= 0 ? "E" : "W"
+    lat_abs = lat.abs
+    lng_abs = lng.abs
+    "%.4f°%s, %.4f°%s" % [lat_abs, lat_dir, lng_abs, lng_dir]
   end
   def google
     # "https://www.google.com/maps/search/?api=1&query=#{lat},#{lng}&z=#{FORMATS[:zoom]}&ll=#{lat},#{lng}"
-    "https://www.google.com/maps/place/#{lat},#{lng}/@#{lat},#{lng},#{IC::FORMATS[:zoom]}z/"
+    "https://www.google.com/maps/place/#{lat},#{lng}/@#{lat},#{lng},#{IC::CONFIG.dig(:tg_bot, :link_zoom)}z/"
   end
   def yandex
-    "https://yandex.ru/maps/?ll=#{lng},#{lat}&z=#{IC::FORMATS[:zoom]}&pt=#{lng},#{lat},pm2rdm1"
+    "https://yandex.ru/maps/?ll=#{lng},#{lat}&z=#{IC::CONFIG.dig(:tg_bot, :link_zoom)}&pt=#{lng},#{lat},pm2rdm1"
   end
   def osm
-     "https://www.openstreetmap.org/?mlat=#{lat}&mlon=#{lng}#map=#{IC::FORMATS[:zoom]}/#{lat}/#{lng}"
+     "https://www.openstreetmap.org/?mlat=#{lat}&mlon=#{lng}#map=#{IC::CONFIG.dig(:tg_bot, :link_zoom)}/#{lat}/#{lng}"
   end
   def url
     osm

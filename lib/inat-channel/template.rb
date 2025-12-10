@@ -31,7 +31,9 @@ module INatChannel
         date: observation.date,
         time: observation.time,
         icons: IC::ICONS,
-        taxa_icons: IC::TAXA_ICONS
+        taxa_icons: IC::TAXA_ICONS,
+        config: IC::CONFIG,
+        data: @data
       }
       @renderer.result_with_hash vars
     end
@@ -65,7 +67,7 @@ module INatChannel
         <blockquote><%= observation.description.text %></blockquote>
         <% end -%>
 
-        <%= location.icon %> <%= location.title %> • <a href="<%= location.google %>">G</a> <a href="<%= location.osm %>">OSM</a>
+        <%= location.icon %> <%= location.dms %> • <a href="<%= location.google %>">G</a> <a href="<%= location.osm %>">OSM</a>
         <% if places && places.size > 0 -%>
         <%   places.each do |place| -%>
         <%= place.icon %> <a href="<%= place.link %>"><%= place.text %></a> <%= '• #' + place.tag if place.tag %>

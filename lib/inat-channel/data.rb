@@ -19,8 +19,8 @@ module INatChannel
         fresh.reject! { |rec| sent?(rec[:uuid]) }
 
         # 2. Если нужно, отфильтровываем по таксонам
-        taxon_uniq = IC::CONFIG[:taxon_uniq]            # :string эквивалентно бесконечному целому
-        fresh.reject! { |rec| used?(rec.dig :taxon, :id) } if taxon_uniq == :strict || Integer === taxon_uniq
+        taxon_uniq = IC::CONFIG[:unique_taxon]
+        fresh.reject! { |rec| used?(rec.dig :taxon, :id) } if taxon_uniq == :strict
         
         if taxon_uniq == :priority
           uniq_fresh = fresh.reject { |rec| used?(rec.dig :taxon, :id) }
@@ -155,7 +155,7 @@ module INatChannel
 
       def fetch_new_pool
         result = {}
-        dead_date = Date.today - IC::CONFIG[:pool_depth]
+        dead_date = Date.today - IC::CONFIG.dig(:days_back, :pool)
         records = IC::load_list(**IC::CONFIG[:base_query], created_d1: dead_date.to_s)
         records.each do |rec|
           result[rec[:uuid]] = {
@@ -168,7 +168,7 @@ module INatChannel
       end
 
       def load_pool
-        file = IC::CONFIG[:pool_file]
+        file = IC::CONFIG.dig(:data_files, :pool)
         if File.exist?(file)
           data = JSON.parse File.read(file), symbolize_names: false
           case data
@@ -200,7 +200,7 @@ module INatChannel
       end
 
       def load_used
-        file = IC::CONFIG[:used_file]
+        file = IC::CONFIG.dig(:data_files, :used)
         if File.exist?(file)
           data = JSON.parse File.read(file), symbolize_names: false
           data.transform_keys!(&:to_i)
@@ -223,7 +223,7 @@ module INatChannel
       end
 
       def load_sent
-        file = IC::CONFIG[:sent_file]
+        file = IC::CONFIG.dig(:data_files, :sent)
         if File.exist?(file)
           data = JSON.parse File.read(file), symbolize_names: false
           raise "Invalid format of sent file" unless Hash === data
@@ -255,17 +255,17 @@ module INatChannel
         size = pool.size
 
         # 2. Удаляем использованные
-        taxon_uniq = IC::CONFIG[:taxon_uniq]
+        taxon_uniq = IC::CONFIG[:unique_taxon]
         pool.reject! { |_, value| used?(value['taxon_id']) } if taxon_uniq == :strict || Integer === taxon_uniq
         IC::logger.info "Removed #{size - pool.size} used records from pool" if pool.size != size
         size = pool.size
 
         # 3. Удаляем устаревшие
-        dead_date = Date.today - IC::CONFIG[:pool_depth]
+        dead_date = Date.today - IC::CONFIG.dig(:days_back, :pool)
         pool.reject! { |_, value| value['created_at'] < dead_date }
         IC::logger.info "Removed #{size - pool.size} outdated records from pool" if pool.size != size
 
-        file = IC::CONFIG[:pool_file]
+        file = IC::CONFIG.dig(:data_files, :pool)
         FileUtils.mkdir_p File.dirname(file)
         File.write file, JSON.pretty_generate(pool)
       end
@@ -274,14 +274,11 @@ module INatChannel
         size = used.size
 
         # Удаляем устаревшие, если актуально
-        taxon_uniq = IC::CONFIG[:taxon_uniq]
-        if Integer === taxon_uniq
-          dead_date = Date.today - taxon_uniq
-          used.reject! { |_, value| value < dead_date }
-          IC::logger.info "Removed #{size - used.size} outdated records from used" if used.size != size
-        end
+        dead_date = Date.today - IC::CONFIG.dig(:days_back, :used)
+        used.reject! { |_, value| value < dead_date }
+        IC::logger.info "Removed #{size - used.size} outdated records from used" if used.size != size
 
-        file = IC::CONFIG[:used_file]
+        file = IC::CONFIG.dig(:data_files, :used)
         FileUtils.mkdir_p File.dirname(file)
         File.write file, JSON.pretty_generate(used)
       end
@@ -289,12 +286,12 @@ module INatChannel
       def save_sent
         size = sent.size
         
-        # Удаляем устаревшие (-1 для надежности)
-        dead_date = Date.today - IC::CONFIG[:pool_depth] - 1
+        # Удаляем устаревшие 
+        dead_date = Date.today - IC::CONFIG.dig(:days_back, :sent)
         sent.reject! { |_, value| value['sent_at'] < dead_date }
         IC::logger.info "Removed #{size - sent.size} outdated records from sent" if sent.size != size
 
-        file = IC::CONFIG[:sent_file]
+        file = IC::CONFIG.dig(:data_files, :sent)
         FileUtils.mkdir_p File.dirname(file)
         File.write file, JSON.pretty_generate(sent)
       end
