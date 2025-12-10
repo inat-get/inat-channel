@@ -37,3 +37,13 @@ $ bundle install
 $ bundle exec inat-channel [options]
 ```
 
+
+```shell
+$ inat-channel --help
+Usage: inat-channel [options]
+    -c, --config FILE                Config file (default: inat-channel.yml)
+    -l, --log-level LEVEL            Log level (default: warn)
+        --debug                      Set log level to debug
+        --version                    Show version info and exit
+    -h, --help                       Show help and exit
+```
