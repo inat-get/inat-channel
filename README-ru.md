@@ -79,7 +79,6 @@ Usage: inat-channel [options]
 ### Конфигурационный файл
 
 Пример:
-
 ```yaml
 base_query:
   project_id: 175821
@@ -115,7 +114,7 @@ tg_bot:
   retries: 10
   interval: 1.0
   randomness: 0.5
-  chat_id: '@‹my_test_channel›'
+  chat_id: '@<my_test_channel>'
   template: message.erb
   desc_limit: 512
   link_zoom: 12
@@ -127,4 +126,18 @@ notify_level: warn
 
 places: places.yml
 ```
+
+Это вполне рабочий (если исправить `tg_bot.chat_id`), хотя и сильно избыточный конфиг. Разберем параметры по частям.
+
+#### Параметры запроса к API
+
+```yaml
+<b>base_query:</b>
+  project_id: 175821
+  locale: ru
+  popular: true
+  photo_license: 'cc-by,cc-by-nc,cc-by-nd,cc-by-sa,cc-by-nc-nd,cc-by-nc-sa,cc0'
+  quality_grade: research
+```
+
 
