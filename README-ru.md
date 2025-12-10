@@ -37,6 +37,19 @@ $ bundle install
 $ bundle exec inat-channel [options]
 ```
 
+### Вручную
+
+Устанавливаем:
+```shell
+gem install inat-channel
+```
+
+Запускаем:
+```shell
+inat-channel [options]
+```
+
+Параметров командной строки немного и все они необязательны:
 
 ```shell
 $ inat-channel --help
