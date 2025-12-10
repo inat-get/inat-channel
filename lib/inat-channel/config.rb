@@ -25,7 +25,6 @@ module INatChannel
         env = load_env
         cfg.merge! env
         validate_and_fix_config! cfg
-        cfg
       end
 
       def parse_options
@@ -79,10 +78,15 @@ module INatChannel
         raise 'Missing chat_id'               unless cfg[:chat_id]
 
         basename = File.basename cfg[:config], '.*'
-        cfg[:pool_file] ||= "./data/#{basename}_pool.json"
-        cfg[:sent_file] ||= "./data/#{basename}_sent.json"
-        cfg[:lock_file] ||= "./data/#{basename}__bot.lock"
-        cfg[:retries]   ||= 5
+        cfg[:pool_file]  ||= "./data/#{basename}_pool.json"
+        cfg[:sent_file]  ||= "./data/#{basename}_sent.json"
+        cfg[:used_file]  ||= "./data/#{basename}_used.json"
+        cfg[:lock_file]  ||= "./data/#{basename}__bot.lock"
+        cfg[:retries]    ||= 5
+        cfg[:pool_depth] ||= cfg[:days_back] * 3
+        cfg[:taxon_uniq] ||= :ignore
+        cfg[:taxon_uniq]   = cfg[:taxon_uniq].to_sym if String === cfg[:taxon_uniq]
+        cfg
       end
 
     end

@@ -20,7 +20,6 @@ module INatChannel
           msg_id = send_message IC::CONFIG[:chat_id], message
         end
 
-        IC::sent[observation[:uuid]] = { msg_id: msg_id, sent_at: Time.now.to_s }
         IC::logger.info "Posted #{observation[:id]} (#{photos.size} photos)"
         msg_id
       end

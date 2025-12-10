@@ -12,10 +12,11 @@ uuid = select_uuid news
 if uuid
   obs = load_observation(uuid)
   if obs
-    send_observation(obs)
+    msg_id = send_observation(obs)
+    IC::confirm_sending! msg_id
   else
+    IC::revert_sending!
     logger.warn "Failed to load #{uuid} — returning to pool"
-    pool << uuid 
     notify_admin "Failed to load #{uuid} — returning to pool"
   end
 

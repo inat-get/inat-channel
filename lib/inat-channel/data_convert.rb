@@ -11,16 +11,22 @@ module INatChannel
     class << self
 
       def convert_observation observation_source
-        id = observation_source[:id]
-        url = observation_source[:uri]
-        uuid = observation_source[:uuid]
-        user = convert_user observation_source[:user]
-        taxon = convert_taxon observation_source[:taxon], observation_source[:identifications]
-        places = convert_places observation_source[:place_ids]
-        datetime = DateTime.parse observation_source[:time_observed_at]
-        location = convert_location observation_source[:geojson]
-        description = convert_description observation_source[:description]
-        place_guess = observation_source[:place_guess]
+        begin
+          id = observation_source[:id]
+          url = observation_source[:uri]
+          uuid = observation_source[:uuid]
+          user = convert_user observation_source[:user]
+          taxon = convert_taxon observation_source[:taxon], observation_source[:identifications]
+          places = convert_places observation_source[:place_ids]
+          datetime = DateTime.parse(observation_source[:time_observed_at] || observation_source[:observed_on_string])
+          location = convert_location observation_source[:geojson]
+          description = convert_description observation_source[:description]
+          place_guess = observation_source[:place_guess]
+        rescue => e
+          IC::logger.error e.full_message
+          IC::logger.info JSON.pretty_generate(observation_source)
+          raise e
+        end
         Observation::new id: id, url: url, uuid: uuid, user: user, taxon: taxon, places: places, datetime: datetime, location: location, description: description, place_guess: place_guess
       end
 
