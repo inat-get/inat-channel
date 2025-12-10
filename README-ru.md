@@ -27,3 +27,13 @@
 gem 'inat-channel', '~> 0.9.0'
 ```
 
+Выполнить:
+```shell
+$ bundle install
+```
+
+И в дальнейшем пользоваться:
+```shell
+$ bundle exec inat-channel [options]
+```
+
