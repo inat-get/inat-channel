@@ -14,13 +14,13 @@ module INatChannel
       @template = template
       @data = data
       @renderer = ERB::new @template, trim_mode: '-'
-      INatChannel::Icons::TAXA_ICONS.merge! data[:taxa_icons] if data[:taxa_icons]
-      INatChannel::Icons::ICONS.merge! data[:icons] if data[:icons]
-      INatChannel::FORMATS.merge! data[:formats] if data[:formats]
+      IC::TAXA_ICONS.merge! data[:taxa_icons] if data[:taxa_icons]
+      IC::ICONS.merge! data[:icons] if data[:icons]
+      IC::FORMATS.merge! data[:formats] if data[:formats]
     end
 
     def process observation_source
-      observation = INatChannel::DataConvert::convert_observation observation_source
+      observation = IC::convert_observation observation_source
       vars = {
         observation: observation,
         datetime: observation.datetime,
@@ -30,8 +30,10 @@ module INatChannel
         user: observation.user,
         date: observation.date,
         time: observation.time,
-        icons: INatChannel::Icons::ICONS,
-        taxa_icons: INatChannel::Icons::TAXA_ICONS
+        icons: IC::ICONS,
+        taxa_icons: IC::TAXA_ICONS,
+        config: IC::CONFIG,
+        data: @data
       }
       @renderer.result_with_hash vars
     end
@@ -58,14 +60,14 @@ module INatChannel
       DEFAULT_TEMPLATE = <<~ERB
         <%= taxon.icon %> <a href="<%= taxon.url %>"><%= taxon.title %></a>
 
-        <%= observation.icon %> <a href="<%= observation.url %>">#<%= observation.id %></a>
+        <%= observation.icon %> <%= observation.url %>
         <%= datetime.icon %> <%= datetime %>
         <%= user.icon %> <a href="<%= user.url %>"><%= user.title %></a>
         <% if observation.description -%>
         <blockquote><%= observation.description.text %></blockquote>
         <% end -%>
 
-        <%= location.icon %> <%= location.title %> • <a href="<%= location.google %>">G</a> <a href="<%= location.osm %>">OSM</a>
+        <%= location.icon %> <%= location.dms %> • <a href="<%= location.google %>">G</a> <a href="<%= location.osm %>">OSM</a>
         <% if places && places.size > 0 -%>
         <%   places.each do |place| -%>
         <%= place.icon %> <a href="<%= place.link %>"><%= place.text %></a> <%= '• #' + place.tag if place.tag %>
@@ -74,8 +76,10 @@ module INatChannel
         <%= icons[:place] %> <%= observation.place_guess %>
         <% end -%>
 
-        <%= taxon.to_tags.join(' • ') %>
+        <%= taxon.to_tags&.join(' • ') %>
       ERB
+
+      private_constant :DEFAULT_TEMPLATE
 
       def default
         @default ||= new(DEFAULT_TEMPLATE, {}).freeze
@@ -85,6 +89,18 @@ module INatChannel
 
     end
 
+  end
+
+end
+
+module IC
+
+  def load_template path
+    INatChannel::Template::load path
+  end
+
+  def default_template
+    INatChannel::Template::default
   end
 
 end

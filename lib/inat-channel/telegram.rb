@@ -11,30 +11,29 @@ module INatChannel
       TELEGRAM_API = 'https://api.telegram.org/bot'
 
       def send_observation observation
-        photos = INatChannel::Message::list_photos observation
-        message = INatChannel::Message::make_message observation
+        photos = IC::list_photos observation
+        message = IC::make_message observation
 
         unless photos.empty?
-          msg_id = send_media_group INatChannel::CONFIG[:chat_id], photos[0..9], message
+          msg_id = send_media_group IC::CONFIG.dig(:tg_bot, :chat_id), photos[0..9], message
         else
-          msg_id = send_message INatChannel::CONFIG[:chat_id], message
+          msg_id = send_message IC::CONFIG.dig(:tg_bot, :chat_id), message
         end
 
-        INatChannel::Data::sent[observation[:uuid]] = { msg_id: msg_id, sent_at: Time.now.to_s }
-        INatChannel::LOGGER.info "Posted #{observation[:id]} (#{photos.size} photos)"
+        IC::logger.info "Posted #{observation[:id]} (#{photos.size} photos)"
         msg_id
       end
 
       def notify_admin text
-        send_message(INatChannel::CONFIG[:admin_telegram_id], "iNatChannel: #{text}")
+        send_message(IC::CONFIG.dig(:tg_bot, :admin_id), "iNatChannel: #{text}")
       rescue
-        INatChannel::LOGGER.error "Admin notify failed"
+        IC::logger.error "Admin notify failed"
       end
 
       private
 
       def token 
-        @token ||= INatChannel::CONFIG[:telegram_bot_token]
+        @token ||= IC::CONFIG.dig(:tg_bot, :token)
       end
 
       def send_message chat_id, text
@@ -71,11 +70,15 @@ module INatChannel
 
       def faraday
         @faraday ||= Faraday.new do |f|
-          f.request :retry, max: INatChannel::CONFIG[:retries], interval: 2.0, interval_randomness: 0.5,  
+          f.request :retry, 
+                    max: IC::CONFIG.dig(:tg_bot, :retries), 
+                    interval: IC::CONFIG.dig(:tg_bot, :interval), 
+                    interval_randomness: IC::CONFIG.dig(:tg_bot, :randomness),
+                    backoff_factor: IC::CONFIG.dig(:tg_bot, :backoff),
                     exceptions: [ Faraday::TimeoutError, Faraday::ConnectionFailed, Faraday::SSLError, Faraday::ClientError ]
     
-          if INatChannel::LOGGER.level == ::Logger::DEBUG
-            f.response :logger, INatChannel::LOGGER, bodies: true, headers: true 
+          if IC::logger.level == ::Logger::DEBUG
+            f.response :logger, IC::logger, bodies: true, headers: true 
           end
     
           f.adapter Faraday.default_adapter
@@ -87,3 +90,18 @@ module INatChannel
   end
 
 end
+
+module IC
+
+  def send_observation observation
+    INatChannel::Telegram::send_observation observation
+  end
+
+  def notify_admin text
+    INatChannel::Telegram::notify_admin text
+  end
+
+  module_function :send_observation, :notify_admin
+
+end
+
