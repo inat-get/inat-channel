@@ -106,16 +106,18 @@ data_files:
   used: data/used.json
   
 api:
-  retries: 10
+  retries: 5
   interval: 1.0
   randomness: 0.5
+  backoff: 2
   page_delay: 1.0
   per_page: 200
   
 tg_bot:
-  retries: 10
+  retries: 5
   interval: 1.0
   randomness: 0.5
+  backoff: 2
   chat_id: '@<my_test_channel>'
   template: message.erb
   desc_limit: 512
@@ -208,16 +210,18 @@ data_files:
 
 ```yaml
 api:
-  retries: 10
+  retries: 5
   interval: 1.0
   randomness: 0.5
+  backoff: 2
   page_delay: 1.0
   per_page: 200
   
 tg_bot:
-  retries: 10
+  retries: 5
   interval: 1.0
   randomness: 0.5
+  backoff: 2
   chat_id: '@<my_test_channel>'
   template: message.erb
   desc_limit: 512
@@ -226,4 +230,7 @@ tg_bot:
 
 Две группы параметров отвечают за работу с API iNaturalist и Telegram Bot API.
 
-Четыре первых ключа в этих группах одинаковые и задают параметры [`faraday-retry`](https://github.com/lostisland/faraday-retry).
+Четыре первых ключа в этих группах одинаковые и задают параметры [`faraday-retry`](https://github.com/lostisland/faraday-retry). Значения
+по умолчанию показаны выше, их можно изменять для тонкой настройки, но как правило этого не требуется.
+
+
