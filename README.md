@@ -9,11 +9,9 @@ A script that sends a random iNaturalist observation from a selected sample to T
 
 ## What does it do?
 
-+ Obtains a sample via the [iNaturalist API](https://api.inaturalist.org/v2/docs/#/Observations/get_observations)  
-  based on an arbitrary query (supported by the API).
++ Obtains a sample via the [iNaturalist API](https://api.inaturalist.org/v2/docs/#/Observations/get_observations) based on an arbitrary query (supported by the API).
 
-+ Sends a random observation from the sample to a specified Telegram channel, excluding those already sent.  
-  If there are no new observations in the fresh sample, it takes from a saved pool.
++ Sends a random observation from the sample to a specified Telegram channel, excluding those already sent. If there are no new observations in the fresh sample, it takes from a saved pool.
 
 + Saves unsent observations obtained via the query into the pool.
 
@@ -66,16 +64,15 @@ Usage: inat-channel [options]
 
 ## Configuration
 
-Main settings are described in a YAML configuration file. Optionally, you can specify an ERB message template and extract  
-the `places` group of settings (see below) into a separate YAML file.
+Main settings are described in a YAML configuration file. Optionally, you can specify an ERB message template and extract the `places` group of settings (see below) into a separate YAML file.
 
 Most settings have default values and may be omitted, but some are mandatory.
 
 ### Environment variables
 
-Additionally, **two mandatory parameters** must be set **in environment variables**: `TELEGRAM_BOT_TOKEN` is responsible for the Telegram bot token,  
-which is issued during creation via [@BotFather](https://t.me/BotFather) — you need to add this bot (your bot) to your channel as an admin  
-and give it rights to post messages; in the `ADMIN_TELEGRAM_ID` variable, specify your personal ID — notifications will be sent to it.  
+Additionally, **two mandatory parameters** must be set **in environment variables**: `TELEGRAM_BOT_TOKEN` is responsible for the Telegram bot token,
+which is issued during creation via [@BotFather](https://t.me/BotFather) — you need to add this bot (your bot) to your channel as an admin
+and give it rights to post messages; in the `ADMIN_TELEGRAM_ID` variable, specify your personal ID — notifications will be sent to it.
 You can find this ID using the bot [@Getmyid_bot](https://t.me/Getmyid_bot). These parameters cannot be set in the config file for security reasons.
 
 ### Configuration file
