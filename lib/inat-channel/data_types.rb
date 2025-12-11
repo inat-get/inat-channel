@@ -58,7 +58,7 @@ class Array
   end
 end
 
-Observation = Struct::new :taxon, :id, :uuid, :url, :user, :datetime, :places, :place_guess, :description, :location, keyword_init: true do
+Observation = Data::define :taxon, :id, :uuid, :url, :user, :datetime, :places, :place_guess, :description, :location do
   def icon
     IC::ICONS[:observation]
   end
@@ -70,7 +70,7 @@ Observation = Struct::new :taxon, :id, :uuid, :url, :user, :datetime, :places, :
   end
 end
 
-Taxon = Struct::new :scientific_name, :common_name, :id, :ancestors, keyword_init: true do
+Taxon = Data::define :scientific_name, :common_name, :id, :ancestors do
   def icon
     IC::ancestors_icon ancestors.map(&:id)
   end
@@ -89,13 +89,13 @@ Taxon = Struct::new :scientific_name, :common_name, :id, :ancestors, keyword_ini
   end
 end
 
-Ancestor = Struct::new :scientific_name, :id, keyword_init: true do
+Ancestor = Data::define :scientific_name, :id do
   def to_tag
     scientific_name.to_tag
   end
 end
 
-Place = Struct::new :ids, :text, :link, :tag, keyword_init: true do
+Place = Data::define :text, :link, :tag do
   def icon
     IC::ICONS[:place]
   end
@@ -110,7 +110,7 @@ Place = Struct::new :ids, :text, :link, :tag, keyword_init: true do
   end
 end
 
-User = Struct::new :id, :login, :name, keyword_init: true do
+User = Data::define :id, :login, :name do
   def icon
     IC::ICONS[:user]
   end
@@ -142,7 +142,7 @@ module IC
 
 end
 
-Description = Struct::new :value, keyword_init: true do
+Description = Data::define :value do
   def icon
     IC::ICONS[:description]
   end
@@ -160,7 +160,7 @@ Description = Struct::new :value, keyword_init: true do
   end
 end
 
-Location = Struct::new :lat, :lng, keyword_init: true do
+Location = Data::define :lat, :lng do
   def icon
     IC::ICONS[:location]
   end

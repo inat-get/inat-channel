@@ -322,3 +322,26 @@ regions:
 
 ## Шаблон сообщения
 
+Как уже сказано выше, можно указать в конфиге ERB-шаблон сообщения. Если он не указан, то используется встроенный шаблон по умолчанию:
+```erb
+<%= taxon.icon %> <a href="<%= taxon.url %>"><%= taxon.title %></a>
+
+<%= observation.icon %> <%= observation.url %>
+<%= datetime.icon %> <%= datetime %>
+<%= user.icon %> <a href="<%= user.url %>"><%= user.title %></a>
+<% if observation.description -%>
+<blockquote><%= observation.description.text %></blockquote>
+<% end -%>
+
+<%= location.icon %> <%= location.dms %> • <a href="<%= location.google %>">G</a> <a href="<%= location.osm %>">OSM</a>
+<% if places && places.size > 0 -%>
+<%   places.each do |place| -%>
+<%= place.icon %> <a href="<%= place.link %>"><%= place.text %></a> <%= '• #' + place.tag if place.tag %>
+<%   end -%>
+<% else -%>
+<%= icons[:place] %> <%= observation.place_guess %>
+<% end -%>
+
+<%= taxon.to_tags&.join(' • ') %>
+```
+
