@@ -4,7 +4,7 @@
 # inat-channel — automatic posting of observations
 
 [![GitHub License](https://img.shields.io/github/license/inat-get/inat-channel)](LICENSE)
-[![Gem Version](https://badge.fury.io/rb/inat-channel.svg?icon=si%3Arubygems&d=6)](https://badge.fury.io/rb/inat-channel)
+[![Gem Version](https://badge.fury.io/rb/inat-channel.svg?icon=si%3Arubygems&d=7)](https://badge.fury.io/rb/inat-channel)
 [![Ruby](https://github.com/inat-get/inat-channel/actions/workflows/ruby.yml/badge.svg)](https://github.com/inat-get/inat-channel/actions/workflows/ruby.yml) 
 ![Coverage](coverage-badge.svg)
 
