@@ -172,10 +172,11 @@ Group of parameters controlling recency and data lifetime.
   and especially to be counted as popular (means at least one user favorited the observation), some extra time is needed.
   Though 30 days may be too much, at least a week is recommended.
 
-+ `days_back.pool` controls the age of observations in the pool. The pool is used if no fresh observations are available or all are already sent.  
++ `days_back.pool` controls the age of observations in the pool. The pool is used if no fresh observations are available or all are already sent.
   Observations older (in days) than this are removed from the pool. Default is `days_back.fresh * 3`. This parameter also controls initial pool fill on first run.
 
-+ `days_back.sent` controls how long the list of sent observations is kept. Age is counted from the send date. It is recommended to set it equal to `days_back.pool` or one day more, to avoid duplicates (they shouldn't get into the pool but just in case...). Default is `days_back.pool + 1`.
++ `days_back.sent` controls how long the list of sent observations is kept. Age is counted from the send date. It is recommended to set it equal 
+   to `days_back.pool` or one day more, to avoid duplicates (they shouldn't get into the pool but just in case...). Default is `days_back.pool + 1`.
 
 + `days_back.used` controls how long information about *used taxa* is kept. Default is `365` days (1 year).
 
@@ -345,7 +346,7 @@ As mentioned, you can specify an ERB message template in the config. If not prov
 
 [<img align="right" width="40%" src="example.png">](example.png)
 
-This template uses many emojis, which may look gaudy but makes it language-independent. You will most likely want to use your own template for your channel.  
+This template uses many emojis, which may look gaudy but makes it language-independent. You will most likely want to use your own template for your channel.
 [An example](https://github.com/inat-get/channel-ural/blob/main/message.erb) is available in the [`channel-ural`](https://github.com/inat-get/channel-ural) project.
 
 The template variables (standard or immutable data classes) are:
@@ -366,7 +367,7 @@ Data class definitions are in [`data_types.rb`](https://github.com/inat-get/inat
 
 ## Usage example
 
-The script fully supports GitHub Actions. See how it works in the [`inat-get/channel-ural`](https://github.com/inat-get/channel-ural) project.  
+The script fully supports GitHub Actions. See how it works in the [`inat-get/channel-ural`](https://github.com/inat-get/channel-ural) project.
 It contains four configs and four workflows that run them, to post different observation categories at different times.
 
 ## Version
