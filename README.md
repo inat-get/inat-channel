@@ -1,3 +1,6 @@
+| **EN** | [ru](README-ru.md) |
+|----------|----------|
+
 # inat-channel — automatic posting of observations
 
 [![GitHub License](https://img.shields.io/github/license/inat-get/inat-channel)](LICENSE)
