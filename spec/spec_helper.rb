@@ -14,8 +14,8 @@ ENV['ADMIN_TELEGRAM_ID'] = '12345'
 
 test_config = {
   'base_query' => { 'project_id' => 99999 },
-  'days_back' => 30,
-  'chat_id' => -1001234567890
+  'days_back' => { 'fresh' => 30 },
+  'tg_bot' => { 'chat_id' => -1001234567890 }
 }
 FileUtils.mkdir_p('spec/tmp')
 File.write('spec/tmp/inat-channel.yml', YAML.dump(test_config))
