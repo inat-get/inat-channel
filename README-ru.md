@@ -349,3 +349,7 @@ regions:
 конкретного канала вы захотите использовать свой собственный шаблон. [Пример](https://github.com/inat-get/channel-ural/blob/main/message.erb) можно 
 посмотреть в проекте [`channel-ural`](https://github.com/inat-get/channel-ural).
 
+Внутри шаблона доступны следующие переменные (стандартных классов или специальных иммутабельных data-классов):
++ `observation`: `Observation`
++ `datetime`: `DateTime` = `observation.datetime`
++ `date`: `Date` = `observation.date` (= `datetime.to_date`)
