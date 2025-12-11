@@ -167,9 +167,9 @@ unique_taxon: priority
 
 Group of parameters controlling recency and data lifetime.
 
-+ `days_back.fresh` is *mandatory* and defines how many days of data are requested each run.  
-  You might want to reduce it according to the script run frequency, but keep in mind that to achieve `research` status,  
-  and especially to be counted as popular (means at least one user favorited the observation), some extra time is needed.  
++ `days_back.fresh` is *mandatory* and defines how many days of data are requested each run.
+  You might want to reduce it according to the script run frequency, but keep in mind that to achieve `research` status,
+  and especially to be counted as popular (means at least one user favorited the observation), some extra time is needed.
   Though 30 days may be too much, at least a week is recommended.
 
 + `days_back.pool` controls the age of observations in the pool. The pool is used if no fresh observations are available or all are already sent.  
