@@ -86,7 +86,7 @@ module INatChannel
         cfg[:data_files][:used] ||= "#{ cfg[:data_files][:root] }/#{ basename }_used.json"
 
         cfg[:lock_file]        ||= {}
-        cfg[:lock_file][:path] ||= "#{ cfg[:data_files][:root] }/#{ basename }__bot.json"
+        cfg[:lock_file][:path] ||= "#{ cfg[:data_files][:root] }/#{ basename }__bot.lock"
         cfg[:lock_file][:ttl]  ||= 300  # 5 min
 
         cfg[:days_back][:pool] ||= 3 * cfg.dig(:days_back, :fresh)
