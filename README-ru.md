@@ -353,3 +353,15 @@ regions:
 + `observation`: `Observation`
 + `datetime`: `DateTime` = `observation.datetime`
 + `date`: `Date` = `observation.date` (= `datetime.to_date`)
++ `location`: `Location` = `observation.location`
++ `places`: `Array<Place>` = `observation.places`
++ `taxon`: `Taxon` = `observation.taxon`
++ `user`: `User` = `observation.user`
++ `icons`: `Hash` — набор эмодзи для иконок
++ `taxa_icons`: `Hash` — набор эмодзи для иконок таксонов, выбор идет снизу вверх по иерархии
++ `data`: `Hash` — данные шаблона — когда вы задаете собственный шаблон, помимо основной ERB-части, можно задать «front-matter» в YAML-формате, 
+   эти данные будут переданы в переменную, но кроме того, там можно задать `icons` и `taxa_icons`, которые перекроют встроенные
++ `config`: `Hash` — данные конфига
+
+Определения data-классов находятся в файле [`data_types.rb`](https://github.com/inat-get/inat-channel/blob/next/lib/inat-channel/data_types.rb).
+
