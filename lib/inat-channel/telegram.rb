@@ -73,7 +73,8 @@ module INatChannel
           f.request :retry, 
                     max: IC::CONFIG.dig(:tg_bot, :retries), 
                     interval: IC::CONFIG.dig(:tg_bot, :interval), 
-                    interval_randomness: IC::CONFIG.dig(:tg_bot, :randomness),  
+                    interval_randomness: IC::CONFIG.dig(:tg_bot, :randomness),
+                    backoff_factor: IC::CONFIG.dig(:tg_bot, :backoff),
                     exceptions: [ Faraday::TimeoutError, Faraday::ConnectionFailed, Faraday::SSLError, Faraday::ClientError ]
     
           if IC::logger.level == ::Logger::DEBUG

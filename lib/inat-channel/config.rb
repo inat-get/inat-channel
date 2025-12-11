@@ -97,12 +97,14 @@ module INatChannel
         cfg[:api][:retries]    ||= 5
         cfg[:api][:interval]   ||= 1.0
         cfg[:api][:randomness] ||= 0.5
+        cfg[:api][:backoff]    ||= 2
         cfg[:api][:page_delay] ||= 1.0
         cfg[:api][:per_page]   ||= 200
 
         cfg[:tg_bot][:retries]    ||= 5
         cfg[:tg_bot][:interval]   ||= 1.0
         cfg[:tg_bot][:randomness] ||= 0.5
+        cfg[:tg_bot][:backoff]    ||= 2
         cfg[:tg_bot][:desc_limit] ||= 512
         cfg[:tg_bot][:link_zoom]  ||= 12
 

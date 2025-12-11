@@ -226,4 +226,4 @@ tg_bot:
 
 Две группы параметров отвечают за работу с API iNaturalist и Telegram Bot API.
 
-Три первых ключа в этих группах одинаковые и задают параметры `faraday-retry`.
+Четыре первых ключа в этих группах одинаковые и задают параметры [`faraday-retry`](https://github.com/lostisland/faraday-retry).

@@ -94,6 +94,7 @@ module INatChannel
                     max: IC::CONFIG.dig(:api, :retries), 
                     interval: IC::CONFIG.dig(:api, :interval), 
                     interval_randomness: IC::CONFIG.dig(:api, :randomness),
+                    backoff_factor: IC::CONFIG.dig(:api, :backoff),
                     exceptions: [ Faraday::TimeoutError, Faraday::ConnectionFailed, Faraday::SSLError, Faraday::ClientError ]
           f.request :url_encoded
 
