@@ -268,4 +268,40 @@ places: places.yml
 В описываемом примере места вынесены в отдельный файл. Такая возможность сделана потому, что настройка мест может быть весьма большой,
 а кроме того, ее можно переиспользовать в разных конфигах.
 
+Выглядит она, например, так:
+```places.yml
+regions:
+  - place_ids: [ 139490 ]
+    link: https://www.inaturalist.org/places/139490
+    text: Свердловская область
+    tag: SV
+  - place_ids: [ 139365 ]
+    link: https://www.inaturalist.org/places/139365
+    text: Республика Башкортостан
+    tag: BK
+  - place_ids: [ 139506 ]
+    link: https://www.inaturalist.org/places/139506
+    text: Челябинская область
+    tag: CL
+  - place_ids: [ 139361 ]
+    link: https://www.inaturalist.org/places/139361
+    text: Пермский край
+    tag: PE
+  - place_ids: [ 139358 ]
+    link: https://www.inaturalist.org/places/139358
+    text: Оренбургская область
+    tag: OB
+  - place_ids: [ 12867 ]
+    link: https://www.inaturalist.org/places/12867
+    text: Ханты-Мансийский автономный округ
+    tag: KM
+  - place_ids: [ 11809 ]
+    link: https://www.inaturalist.org/places/11809
+    text: Республика Коми
+    tag: KO
+  - place_ids: [ 13219 ]
+    link: https://www.inaturalist.org/places/13219
+    text: Ямало-Ненецкий автономный округ
+    tag: YN
+```
 
