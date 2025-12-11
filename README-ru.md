@@ -367,3 +367,7 @@ regions:
 
 Определения data-классов находятся в файле [`data_types.rb`](https://github.com/inat-get/inat-channel/blob/next/lib/inat-channel/data_types.rb).
 
+## Пример использования
+
+Скрипт полностью совместим с GitHub Actions. Как это работает, см. в проекте [`inat-get/channel-ural`](https://github.com/inat-get/channel-ural). 
+Там прописаны четыре конфига и четыре workflow, их запускающих — чтобы в разное время постить разные категории наблюдений.
