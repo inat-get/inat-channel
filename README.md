@@ -276,35 +276,35 @@ Example `places.yml` looks like:
 ```
 regions:
   - place_ids: [ 139490 ]
-    link: [https://www.inaturalist.org/places/139490](https://www.inaturalist.org/places/139490)
+    link: https://www.inaturalist.org/places/139490
     text: Sverdlovsk Oblast
     tag: SV
   - place_ids: [ 139365 ]
-    link: [https://www.inaturalist.org/places/139365](https://www.inaturalist.org/places/139365)
+    link: https://www.inaturalist.org/places/139365
     text: Republic of Bashkortostan
     tag: BK
   - place_ids: [ 139506 ]
-    link: [https://www.inaturalist.org/places/139506](https://www.inaturalist.org/places/139506)
+    link: https://www.inaturalist.org/places/139506
     text: Chelyabinsk Oblast
     tag: CL
   - place_ids: [ 139361 ]
-    link: [https://www.inaturalist.org/places/139361](https://www.inaturalist.org/places/139361)
+    link: https://www.inaturalist.org/places/139361
     text: Perm Krai
     tag: PE
   - place_ids: [ 139358 ]
-    link: [https://www.inaturalist.org/places/139358](https://www.inaturalist.org/places/139358)
+    link: https://www.inaturalist.org/places/139358
     text: Orenburg Oblast
     tag: OB
   - place_ids: [ 12867 ]
-    link: [https://www.inaturalist.org/places/12867](https://www.inaturalist.org/places/12867)
+    link: https://www.inaturalist.org/places/12867
     text: Khanty-Mansi Autonomous Okrug
     tag: KM
   - place_ids: [ 11809 ]
-    link: [https://www.inaturalist.org/places/11809](https://www.inaturalist.org/places/11809)
+    link: https://www.inaturalist.org/places/11809
     text: Komi Republic
     tag: KO
   - place_ids: [ 13219 ]
-    link: [https://www.inaturalist.org/places/13219](https://www.inaturalist.org/places/13219)
+    link: https://www.inaturalist.org/places/13219
     text: Yamalo-Nenets Autonomous Okrug
     tag: YN
 ```
@@ -336,14 +336,14 @@ As mentioned, you can specify an ERB message template in the config. If not prov
 <%= location.icon %> <%= location.dms %> -  <a href="<%= location.google %>">G</a> <a href="<%= location.osm %>">OSM</a>
 <% if places && places.size > 0 -%>
 <%   places.each do |place| -%>
-<%= place.icon %> <a href="<%= place.link %>"><%= place.text %></a> <%= '-  #' + place.tag if place.tag %>
+<%= place.icon %> <a href="<%= place.link %>"><%= place.text %></a> <%= '• #' + place.tag if place.tag %>
 <%   end -%>
 <% else -%>
 <%= icons[:place] %> <%= observation.place_guess %>
 <% end -%>
 
 
-<%= taxon.to_tags&.join(' -  ') %>
+<%= taxon.to_tags&.join(' • ') %>
 ```
 
 [<img align="right" width="40%" src="example.png">](example.png)
