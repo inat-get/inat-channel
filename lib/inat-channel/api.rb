@@ -23,7 +23,7 @@ module INatChannel
       private_constant :PER_PAGE, :PAGE_DELAY, :API_ENDPOINT, :LIST_FIELDS, :SINGLE_FIELDS
 
       def load_news 
-        load_list(**IC::CONFIG[:base_query], created_d1: (Date.today - IC::CONFIG.dig(:days_back, :fresh)).to_s)
+        load_list(**IC::CONFIG[:base_query], updated_since: (Date.today - IC::CONFIG.dig(:days_back, :fresh)).to_s)
       end
       
       def load_list **query
