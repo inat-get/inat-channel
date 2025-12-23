@@ -5,7 +5,7 @@ module INatChannel
 end
 
 module IC
-  
+
   VERSION = INatChannel::VERSION
 
 end

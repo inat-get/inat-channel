@@ -17,6 +17,7 @@ Gem::Specification::new do |s|
   s.add_dependency 'faraday', '~> 2.14'
   s.add_dependency 'faraday-retry', '~> 2.3'
   s.add_dependency 'sanitize', '~> 7.0'
+  s.add_dependency 'is-dsl', '~> 0.8'
 
   s.add_development_dependency "rspec", "~> 3.13"
   s.add_development_dependency "rake", "~> 13.3"

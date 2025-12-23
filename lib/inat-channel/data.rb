@@ -4,6 +4,7 @@ require 'json'
 require 'fileutils'
 require 'set'
 
+require_relative 'facade'
 require_relative 'config'
 require_relative 'logger'
 require_relative 'lock'
@@ -304,22 +305,8 @@ end
 
 module IC
 
-  def select_uuid fresh
-    INatChannel::Storage::select_uuid fresh
-  end
+  self >> INatChannel::Storage
 
-  def save_data
-    INatChannel::Storage::save
-  end
-
-  def confirm_sending! msg_id
-    INatChannel::Storage::confirm! msg_id
-  end
-
-  def revert_sending!
-    INatChannel::Storage::revert!
-  end
-
-  module_function :select_uuid, :save_data, :confirm_sending!, :revert_sending!
+  encapsulate INatChannel::Storage, :select_uuid, :save => :save_data, :confirm! => :confirm_sending!, :revert! => :revert_sending!
 
 end

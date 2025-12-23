@@ -1,3 +1,4 @@
+require_relative 'facade'
 require_relative 'config'
 require_relative 'logger'
 require_relative 'message'
@@ -93,15 +94,8 @@ end
 
 module IC
 
-  def send_observation observation
-    INatChannel::Telegram::send_observation observation
-  end
+  self >> INatChannel::Telegram
 
-  def notify_admin text
-    INatChannel::Telegram::notify_admin text
-  end
-
-  module_function :send_observation, :notify_admin
+  encapsulate INatChannel::Telegram, :send_observation, :notify_admin
 
 end
-

@@ -1,6 +1,7 @@
 require 'yaml'
 require 'erb'
 
+require_relative 'facade'
 require_relative 'data_types'
 require_relative 'data_convert'
 
@@ -95,12 +96,8 @@ end
 
 module IC
 
-  def load_template path
-    INatChannel::Template::load path
-  end
+  self >> INatChannel::Template
 
-  def default_template
-    INatChannel::Template::default
-  end
+  shadow_encapsulate INatChannel::Template, :load => :load_template, :default => :default_template
 
 end

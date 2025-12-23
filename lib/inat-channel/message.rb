@@ -1,6 +1,7 @@
 require 'set'
 require 'sanitize'
 
+require_relative 'facade'
 require_relative 'config'
 require_relative 'icons'
 require_relative 'template'
@@ -33,15 +34,9 @@ end
 
 module IC
 
-  def make_message observation
-    INatChannel::Message::make_message observation
-  end
+  self >> INatChannel::Message
 
-  def list_photos observation
-    INatChannel::Message::list_photos observation
-  end
-
-  module_function :make_message, :list_photos
+  shadow_encapsulate INatChannel::Message, :make_message, :list_photos
 
 end
 

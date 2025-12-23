@@ -2,6 +2,7 @@ require 'date'
 require 'time'
 require 'set'
 
+require_relative 'facade'
 require_relative 'data_types'
 
 module INatChannel
@@ -99,10 +100,8 @@ end
 
 module IC 
 
-  def convert_observation source
-    INatChannel::DataConvert::convert_observation source
-  end
+  self >> INatChannel::DataConvert
 
-  module_function :convert_observation
+  shadow_encapsulate INatChannel::DataConvert, :convert_observation
 
 end

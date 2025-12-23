@@ -3,6 +3,7 @@ require 'json'
 require 'faraday'
 require 'faraday/retry'
 
+require_relative 'facade'
 require_relative 'config'
 require_relative 'logger'
 
@@ -114,19 +115,10 @@ end
 
 module IC
 
-  def load_news
-    INatChannel::API::load_news
-  end
+  self >> INatChannel::API
 
-  def load_observation uuid
-    INatChannel::API::load_observation uuid
-  end
-
-  def load_list **query
-    INatChannel::API::load_list(**query)
-  end
-
-  module_function :load_news, :load_observation
+  encapsulate INatChannel::API, :load_news, :load_observation
+  shadow_encapsulate INatChannel::API, :load_list
 
 end
 

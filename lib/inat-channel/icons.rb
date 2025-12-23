@@ -1,3 +1,5 @@
+require_relative 'facade'
+
 module INatChannel
   module Icons
     TAXA_ICONS = {
@@ -115,21 +117,8 @@ end
 
 module IC
 
-  TAXA_ICONS = INatChannel::Icons::TAXA_ICONS
-  ICONS = INatChannel::Icons::ICONS
+  self >> INatChannel::Icons
 
-  def taxon_icon taxon
-    INatChannel::Icons::taxon_icon taxon
-  end
-
-  def ancestors_icon ancestor_ids
-    INatChannel::Icons::ancestors_icon ancestor_ids
-  end
-
-  def clock_icon time
-    INatChannel::Icons::clock_icon time
-  end
-
-  module_function :taxon_icon, :ancestors_icon, :clock_icon
+  shadow_encapsulate INatChannel::Icons, :ICONS, :TAXA_ICONS, :taxon_icon, :ancestors_icon, :clock_icon
 
 end

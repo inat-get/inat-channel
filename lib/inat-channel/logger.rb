@@ -1,3 +1,4 @@
+require_relative 'facade'
 require_relative 'config'
 
 module INatChannel
@@ -26,11 +27,9 @@ end
 
 module IC
 
-  def logger
-    INatChannel::Logger::logger
-  end
+  self >> INatChannel::Logger
 
-  module_function :logger
+  encapsulate INatChannel::Logger, :logger
 
 end
 

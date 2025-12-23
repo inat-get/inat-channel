@@ -2,6 +2,7 @@ require 'optparse'
 require 'yaml'
 require 'logger'
 
+require_relative 'facade'
 require_relative 'version'
 
 module INatChannel
@@ -121,13 +122,16 @@ module INatChannel
 
     end
 
+    CONFIG = self.config
+
   end
 
 end
 
 module IC
 
-  CONFIG = INatChannel::Config::config
+  self >> INatChannel::Config
+
+  encapsulate INatChannel::Config, :CONFIG
 
 end
-
