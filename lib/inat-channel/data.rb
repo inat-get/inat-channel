@@ -101,9 +101,14 @@ module INatChannel
       end
 
       def save
-        save_pool
-        save_sent
-        save_used
+        cleanup_pool
+        cleanup_sent
+        cleanup_used
+        
+        write_pool
+        write_sent
+        write_used
+        
         IC::logger.info "Saved pool=#{pool.size}, sent=#{sent.size}"
       end
 
@@ -247,7 +252,7 @@ module INatChannel
         raise e
       end
 
-      def save_pool
+      def cleanup_pool
         size = pool.size
 
         # 1. Удаляем отправленные
@@ -265,33 +270,39 @@ module INatChannel
         dead_date = Date.today - IC::CONFIG.dig(:days_back, :pool)
         pool.reject! { |_, value| value['created_at'] < dead_date }
         IC::logger.info "Removed #{size - pool.size} outdated records from pool" if pool.size != size
-
-        file = IC::CONFIG.dig(:data_files, :pool)
-        FileUtils.mkdir_p File.dirname(file)
-        File.write file, JSON.pretty_generate(pool)
       end
 
-      def save_used
+      def cleanup_used
         size = used.size
 
         # Удаляем устаревшие, если актуально
         dead_date = Date.today - IC::CONFIG.dig(:days_back, :used)
         used.reject! { |_, value| value < dead_date }
         IC::logger.info "Removed #{size - used.size} outdated records from used" if used.size != size
-
-        file = IC::CONFIG.dig(:data_files, :used)
-        FileUtils.mkdir_p File.dirname(file)
-        File.write file, JSON.pretty_generate(used)
       end
 
-      def save_sent
+      def cleanup_sent
         size = sent.size
         
         # Удаляем устаревшие 
         dead_date = Date.today - IC::CONFIG.dig(:days_back, :sent)
         sent.reject! { |_, value| value['sent_at'] < dead_date }
         IC::logger.info "Removed #{size - sent.size} outdated records from sent" if sent.size != size
+      end
 
+      def write_pool
+        file = IC::CONFIG.dig(:data_files, :pool)
+        FileUtils.mkdir_p File.dirname(file)
+        File.write file, JSON.pretty_generate(pool)
+      end
+
+      def write_used
+        file = IC::CONFIG.dig(:data_files, :used)
+        FileUtils.mkdir_p File.dirname(file)
+        File.write file, JSON.pretty_generate(used)
+      end
+
+      def write_sent
         file = IC::CONFIG.dig(:data_files, :sent)
         FileUtils.mkdir_p File.dirname(file)
         File.write file, JSON.pretty_generate(sent)
