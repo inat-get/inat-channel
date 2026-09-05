@@ -19,10 +19,9 @@ if uuid
     logger.warn "Failed to load #{uuid} — returning to pool"
     notify_admin "Failed to load #{uuid} — returning to pool"
   end
-
-  save_data
 else
   notify_admin 'No observation to send.'
   logger.warn 'No observation to send.'
 end
 
+save_data
